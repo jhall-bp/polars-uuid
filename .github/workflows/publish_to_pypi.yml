@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64]
-        python-version: ["3.9", "3.11", "3.13"]
+        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -55,7 +55,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64]
-        python-version: ["3.9"]
+        python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
