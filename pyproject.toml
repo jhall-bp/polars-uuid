@@ -20,4 +20,4 @@ module = "polars.utils.udfs"
 ignore_missing_imports = true
 
 [dependency-groups]
-dev = ["maturin>=1.8.3", "polars>=1.8.2", "pytest>=8.3.5"]
+dev = ["maturin>=1.8.3", "polars>=1.8.2", "pytest>=8.3.5", "ruff>=0.11.6"]
