@@ -60,7 +60,7 @@ def uuid_v7(*, timestamp: float) -> pl.Expr:
     return register_plugin_function(
         args=_ARGS,
         plugin_path=_LIB,
-        function_name="uuid7_rand_now",
+        function_name="uuid7_rand",
         is_elementwise=True,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
@@ -70,7 +70,7 @@ def uuid_v7_single(*, timestamp: float) -> pl.Expr:
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
-        function_name="uuid7_rand_now",
+        function_name="uuid7_rand",
         is_elementwise=True,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
