@@ -2,7 +2,8 @@ SHELL=/bin/bash
 
 venv:
 	python3 -m venv .venv
-	.venv/bin/pip install -r requirements.txt
+	.venv/bin/pip install uv
+	.venv/bin/python -m uv sync --group dev
 
 install:
 	unset CONDA_PREFIX && \
@@ -16,7 +17,6 @@ pre-commit:
 	cargo +nightly fmt --all && cargo clippy --all-features
 	.venv/bin/python -m ruff check . --fix --exit-non-zero-on-fix
 	.venv/bin/python -m ruff format polars_uuid tests
-	.venv/bin/mypy polars_uuid tests
 
 test:
 	.venv/bin/python -m pytest tests
