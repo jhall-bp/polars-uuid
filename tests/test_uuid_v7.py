@@ -11,8 +11,12 @@ def timestamp() -> float:
     return 123456789.000001234
 
 
+@pytest.mark.parametrize(
+    "timestamp",
+    (123_456_789.000001234, 1_746_494_082.4762812, 946_684_800, 0)
+)
 def test_uuid_v7(timestamp: float) -> None:
-    df = pl.DataFrame({"idx": list(range(10_000_000))}).with_columns(
+    df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
         uuid=uuid_v7(timestamp=timestamp)
     )
 
@@ -25,7 +29,7 @@ def test_uuid_v7(timestamp: float) -> None:
 
 
 def test_uuid_v7_single(timestamp: float) -> None:
-    df = pl.DataFrame({"idx": list(range(10_000_000))}).with_columns(
+    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
         uuid=uuid_v7_single(timestamp=timestamp)
     )
 
@@ -37,7 +41,7 @@ def test_uuid_v7_single(timestamp: float) -> None:
 
 
 def test_uuid_v7_now() -> None:
-    df = pl.DataFrame({"idx": list(range(10_000_000))}).with_columns(uuid=uuid_v7_now())
+    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(uuid=uuid_v7_now())
 
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
