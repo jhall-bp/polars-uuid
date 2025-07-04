@@ -15,6 +15,35 @@ _ARGS = (
 
 _ARGS_SINGLE = (pl.lit("", dtype=pl.String),)
 
+# Utils
+
+def is_uuid(expr: str | pl.Expr) -> pl.Expr:
+    """Returns a boolean `Series` indicating which values are valid UUID strings."""
+    if isinstance(expr, str):
+        expr = pl.col(expr)
+
+    return register_plugin_function(
+        args=(expr,),
+        plugin_path=_LIB,
+        function_name="is_uuid",
+        is_elementwise=True,
+    )
+
+def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl.Expr:
+    """Create a `Series` of UUID strings from two equal-length `Series` of 64bit values."""
+    if isinstance(high_bits, str):
+        high_bits = pl.col(high_bits)
+
+    if isinstance(low_bits, str):
+        low_bits = pl.col(low_bits)
+
+    return register_plugin_function(
+        args=(high_bits, low_bits),
+        plugin_path=_LIB,
+        function_name="u64_pair_to_uuid_string",
+        is_elementwise=True,
+    )
+
 # UUIDv4
 
 def uuid_v4() -> pl.Expr:
