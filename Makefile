@@ -1,29 +1,21 @@
 SHELL=/bin/bash
 
 venv:
-	python3 -m venv .venv
-	.venv/bin/pip install uv
-	.venv/bin/python -m uv sync --group dev
+	uv sync --group dev
 
 install:
 	unset CONDA_PREFIX && \
-	source .venv/bin/activate && maturin develop
+	uv run maturin develop
 
 install-release:
 	unset CONDA_PREFIX && \
-	source .venv/bin/activate && maturin develop --release
+	uv run maturin develop --release
 
 pre-commit:
+	rustup component add rustfmt
 	cargo fmt --all && cargo clippy --all-features
-	.venv/bin/python -m ruff check . --fix --exit-non-zero-on-fix
-	.venv/bin/python -m ruff format polars_uuid tests
+	uv run ruff check . --fix --exit-non-zero-on-fix
+	uv run ruff format polars_uuid tests
 
 test:
-	.venv/bin/python -m pytest tests
-
-run: install
-	source .venv/bin/activate && python run.py
-
-run-release: install-release
-	source .venv/bin/activate && python run.py
-
+	uv run pytest tests
