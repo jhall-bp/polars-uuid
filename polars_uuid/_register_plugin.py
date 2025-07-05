@@ -103,3 +103,16 @@ def uuid_v7_single(*, timestamp: float) -> pl.Expr:
         is_elementwise=True,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
+
+def uuid_v7_extract_dt(expr: str | pl.Expr, /, *, strict: bool = True) -> pl.Expr:
+    """Return a `Series` of UTC datetimes extracted from another `Series` of UUIDv7 strings."""
+    if isinstance(expr, str):
+        expr = pl.col(expr)
+
+    return register_plugin_function(
+        args=(expr,),
+        plugin_path=_LIB,
+        function_name="uuid7_extract_dt",
+        is_elementwise=True,
+        kwargs={"strict": strict}
+    )
