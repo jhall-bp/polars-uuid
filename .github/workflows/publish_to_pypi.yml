@@ -13,12 +13,8 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - master
-    tags:
-      - '*'
+  release:
+    types: [published]
   pull_request:
   workflow_dispatch:
 
@@ -46,6 +42,7 @@ jobs:
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.6
       - run: make venv
+      - run: make pre-commit
       - run: make install
       - run: make test
 
@@ -54,7 +51,7 @@ jobs:
     strategy:
       matrix:
         target: [x86_64]
-        python-version: ["3.12"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
