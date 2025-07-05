@@ -12,7 +12,7 @@ install-release:
 	uv run maturin develop --release
 
 pre-commit:
-	rustup component add rustfmt
+	rustup component add rustfmt && rustup component add clippy
 	cargo fmt --all && cargo clippy --all-features
 	uv run ruff check . --fix --exit-non-zero-on-fix
 	uv run ruff format polars_uuid tests
