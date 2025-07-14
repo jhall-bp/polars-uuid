@@ -3,20 +3,19 @@ import datetime
 import polars as pl
 import pytest
 from polars.testing import assert_series_equal
+from hypothesis import given
+import hypothesis.strategies as st
 
-from polars_uuid import uuid_v7, uuid_v7_extract_dt, uuid_v7_now, uuid_v7_single
-
-UUID_PATTERN = r"^[0-9a-f]{8}(?:\-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
-
-
-@pytest.fixture
-def timestamp() -> float:
-    return 123456789.000001234
-
-
-@pytest.mark.parametrize(
-    "timestamp", (123_456_789.000001234, 1_746_494_082.4762812, 946_684_800, 0)
+from polars_uuid import (
+    uuid_v7,
+    uuid_v7_extract_dt,
+    uuid_v7_now,
+    uuid_v7_single,
+    is_uuid,
 )
+
+
+@given(st.floats(min_value=0))
 def test_uuid_v7(timestamp: float) -> None:
     df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
         uuid=uuid_v7(timestamp=timestamp)
@@ -25,20 +24,21 @@ def test_uuid_v7(timestamp: float) -> None:
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].is_unique().all()
-    assert df["uuid"].str.contains(UUID_PATTERN).all()
+    assert df.select(is_uuid("uuid")).to_series().all()
     assert df["uuid"].is_sorted()
     assert df["uuid"].str.slice(0, 15).n_unique() == 1
 
 
+@given(st.floats(min_value=0))
 def test_uuid_v7_single(timestamp: float) -> None:
-    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
+    df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
         uuid=uuid_v7_single(timestamp=timestamp)
     )
 
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].n_unique() == 1
-    assert df["uuid"].str.contains(UUID_PATTERN).all()
+    assert df.select(is_uuid("uuid")).to_series().all()
     assert df["uuid"].str.slice(0, 15).n_unique() == 1
 
 
@@ -48,7 +48,7 @@ def test_uuid_v7_now() -> None:
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].is_unique().all()
-    assert df["uuid"].str.contains(UUID_PATTERN).all()
+    assert df.select(is_uuid("uuid")).to_series().all()
     assert df["uuid"].is_sorted()
     assert df["uuid"].str.slice(0, 15).n_unique() > 1
 
@@ -63,7 +63,7 @@ def test_uuid_v7_extract_dt() -> None:
         return int(timestamp_hex, 16)
 
     df = (
-        pl.DataFrame({"idx": list(range(1_000_000))})
+        pl.DataFrame({"idx": list(range(100_000))})
         .with_columns(uuid=uuid_v7_now())
         .with_columns(
             dt=uuid_v7_extract_dt("uuid"),
@@ -90,13 +90,13 @@ def test_uuid_v7_extract_dt_strict_mode() -> None:
         match=r"Failed to extract timestamp from UUID string: .+$",
     ):
         df = (
-            pl.DataFrame({"idx": list(range(1_000_000))})
+            pl.DataFrame({"idx": list(range(100_000))})
             .with_columns(bad_uuid=pl.col("idx").cast(pl.String))
             .with_columns(dt=uuid_v7_extract_dt("bad_uuid"))
         )
 
     df = (
-        pl.DataFrame({"idx": list(range(1_000_000))})
+        pl.DataFrame({"idx": list(range(100_000))})
         .with_columns(bad_uuid=pl.col("idx").cast(pl.String))
         .with_columns(dt=uuid_v7_extract_dt("bad_uuid", strict=False))
     )

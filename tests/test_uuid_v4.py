@@ -27,7 +27,9 @@ def test_partial_uuid_v4() -> None:
 
 
 def test_uuid_v4_single() -> None:
-    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(uuid=uuid_v4_single())
+    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
+        uuid=uuid_v4_single()
+    )
 
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
@@ -37,12 +39,23 @@ def test_uuid_v4_single() -> None:
 
 def test_partial_uuid_v4_single() -> None:
     df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
-        pl.when(pl.col("idx") % 2 == 0).then(uuid_v4_single()).otherwise("idx").alias("uuid")
+        pl.when(pl.col("idx") % 2 == 0)
+        .then(uuid_v4_single())
+        .otherwise("idx")
+        .alias("uuid")
     )
 
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
-    assert df["uuid"].filter(df["uuid"].cast(pl.Int32, strict=False).is_null()).n_unique() == 1
-    assert (df["uuid"].filter(df["uuid"].cast(pl.Int32, strict=False).is_null()).str.count_matches(UUID_PATTERN) == 1).all()
+    assert (
+        df["uuid"].filter(df["uuid"].cast(pl.Int32, strict=False).is_null()).n_unique()
+        == 1
+    )
+    assert (
+        df["uuid"]
+        .filter(df["uuid"].cast(pl.Int32, strict=False).is_null())
+        .str.count_matches(UUID_PATTERN)
+        == 1
+    ).all()
     assert df["uuid"].str.contains(UUID_PATTERN).sum() == (df.height / 2)
     assert df["uuid"].cast(pl.Int32, strict=False).null_count() == (df.height / 2)
