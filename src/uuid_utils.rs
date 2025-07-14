@@ -1,4 +1,3 @@
-#![allow(clippy::unused_unit)]
 use std::iter::zip;
 
 use polars::prelude::*;

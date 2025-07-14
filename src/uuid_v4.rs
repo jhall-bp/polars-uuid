@@ -1,4 +1,3 @@
-#![allow(clippy::unused_unit)]
 use std::fmt::Write;
 
 use polars::prelude::*;
