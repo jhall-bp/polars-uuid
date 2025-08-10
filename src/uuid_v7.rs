@@ -39,7 +39,7 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     Ok(out.into_series())
 }
 
-#[polars_expr(output_type=Int64)]
+#[polars_expr(output_type_func=utc_millis_datetime_output)]
 fn uuid7_extract_dt(inputs: &[Series], kwargs: ExtractDatetimeKwargs) -> PolarsResult<Series> {
     let ca: &StringChunked = inputs[0].str()?;
 
@@ -85,4 +85,16 @@ fn parse_timestamp_from_uuid_string(uuid_string: &str) -> Option<i64> {
             let nsecs_to_millisecs: i64 = (nanoseconds / 1_000_000).into();
             secs_to_millisecs.checked_add(nsecs_to_millisecs)
         })
+}
+
+// Necessary because we can't pass Datetime directly to the polars_expr macro. See https://github.com/pola-rs/pyo3-polars/issues/145
+fn utc_millis_datetime_output(input_fields: &[Field]) -> PolarsResult<Field> {
+    if input_fields.len() != 1 {
+        polars_bail!(InvalidOperation: "Expected a single input field, found {}", input_fields.len());
+    }
+
+    Ok(Field::new(
+        input_fields[0].name.clone(),
+        DataType::Datetime(TimeUnit::Milliseconds, Some(TimeZone::UTC)),
+    ))
 }
