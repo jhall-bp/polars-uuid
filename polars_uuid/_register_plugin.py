@@ -17,7 +17,33 @@ _ARGS_SINGLE = (pl.lit("", dtype=pl.String),)
 
 
 def is_uuid(expr: str | pl.Expr) -> pl.Expr:
-    """Returns a boolean `Series` indicating which values are valid UUID strings."""
+    """
+    Check if values in a column or expression are valid UUID strings.
+
+    Parameters
+    ----------
+    expr : str or pl.Expr
+        The name of the column (as a string) or a polars expression to check for valid UUID strings.
+
+    Returns
+    -------
+    pl.Expr
+        A boolean polars expression indicating which values are valid UUID strings.
+
+    Examples
+    --------
+    >>> df = pl.DataFrame({"id": ["550e8400-e29b-41d4-a716-446655440000", "not-a-uuid"]})
+    >>> df.with_columns(is_uuid("id").alias("is_valid_uuid"))
+    shape: (2, 2)
+    ┌──────────────────────────────────────┬───────────────┐
+    │ id                                   ┆ is_valid_uuid │
+    │ ---                                  ┆ ---           │
+    │ str                                  ┆ bool          │
+    ╞══════════════════════════════════════╪═══════════════╡
+    │ 550e8400-e29b-41d4-a716-446655440000 ┆ true          │
+    │ not-a-uuid                           ┆ false         │
+    └──────────────────────────────────────┴───────────────┘
+    """
     if isinstance(expr, str):
         expr = pl.col(expr)
 
@@ -30,7 +56,19 @@ def is_uuid(expr: str | pl.Expr) -> pl.Expr:
 
 
 def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl.Expr:
-    """Create a `Series` of UUID strings from two equal-length `Series` of 64bit values."""
+    """
+    Converts two 64-bit integer into UUID strings.
+
+    Parameters:
+        high_bits (str | pl.Expr): The column name or polars expression representing the high 64 bits of the UUID.
+        low_bits (str | pl.Expr): The column name or polars expression representing the low 64 bits of the UUID.
+
+    Returns:
+        pl.Expr: A polars expression that produces a Series of UUID strings.
+
+    Notes:
+        - Both `high_bits` and `low_bits` must refer to columns or expressions of equal length.
+    """
     if isinstance(high_bits, str):
         high_bits = pl.col(high_bits)
 
@@ -49,7 +87,15 @@ def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl
 
 
 def uuid_v4() -> pl.Expr:
-    """An expression that generates a series of random v4 UUIDs."""
+    """
+    Generates a series of random version 4 UUIDs.
+
+    Returns:
+        pl.Expr: A polars expression of random v4 UUIDs.
+
+    Example:
+        >>> df.with_columns(uuid=uuid_v4())
+    """
     return register_plugin_function(
         args=_ARGS,
         plugin_path=_LIB,
@@ -59,7 +105,7 @@ def uuid_v4() -> pl.Expr:
 
 
 def uuid_v4_single() -> pl.Expr:
-    """An expression that generates a series repeating a single, random v4 UUID."""
+    """Generates a series filled with the same version 4 UUID."""
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
@@ -72,7 +118,17 @@ def uuid_v4_single() -> pl.Expr:
 
 
 def uuid_v7_now() -> pl.Expr:
-    """An expression that generates a sorted series of random v7 UUIDs using the current time."""
+    """
+    Generates a series of random version 7 UUIDs based on the current system time.
+
+    The generated UUIDs are ordered within the resulting series.
+
+    Returns:
+        pl.Expr: A polars expression of random v7 UUIDs.
+
+    Example:
+        >>> df.with_columns(uuid=uuid_v7_now())
+    """
     return register_plugin_function(
         args=_ARGS,
         plugin_path=_LIB,
@@ -82,7 +138,7 @@ def uuid_v7_now() -> pl.Expr:
 
 
 def uuid_v7_now_single() -> pl.Expr:
-    """An expression that generates a series with a single, random v7 UUID using the current time."""
+    """Generates a series filled with the same version 7 UUID based on the current system time."""
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
@@ -92,7 +148,21 @@ def uuid_v7_now_single() -> pl.Expr:
 
 
 def uuid_v7(*, timestamp: float) -> pl.Expr:
-    """An expression that generates a sorted series of random v7 UUIDs using the given timestamp."""
+    """
+    Generates a series of random version 7 UUIDs based on the given timestamp.
+
+    The generated UUIDs are ordered within the resulting series.
+
+    Parameters:
+        timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
+
+    Returns:
+        pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
+
+    Example:
+        >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
+        >>> df.with_columns(uuid=uuid_v7(timestamp=dt.timestamp()))
+    """
     return register_plugin_function(
         args=_ARGS,
         plugin_path=_LIB,
@@ -103,7 +173,11 @@ def uuid_v7(*, timestamp: float) -> pl.Expr:
 
 
 def uuid_v7_single(*, timestamp: float) -> pl.Expr:
-    """An expression that generates a series with a single, random v7 UUID using the given timestamp."""
+    """Generates a series filled with the same version 7 UUID based on the given timestamp.
+
+    Parameters:
+        timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
+    """
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
@@ -114,7 +188,25 @@ def uuid_v7_single(*, timestamp: float) -> pl.Expr:
 
 
 def uuid_v7_extract_dt(expr: str | pl.Expr, /, *, strict: bool = True) -> pl.Expr:
-    """Return a `Series` of UTC datetimes extracted from another `Series` of UUIDv7 strings."""
+    """
+    Extract UTC datetimes from UUIDv7 strings.
+
+    Parameters:
+        expr (str | pl.Expr): The input column name or polars expression containing UUIDv7 strings.
+        strict (bool, optional): If `True`, raises an error on invalid UUIDv7 strings. If `False`, returns null for invalid entries.
+
+    Returns:
+        pl.Expr: A polars expression yielding a Series of UTC datetimes extracted from the UUIDv7 strings.
+
+    Notes:
+        - UUIDv7 timestamps have millisecond precision
+
+    Examples:
+        >>> df.with_columns(
+        >>>     dt=uuid_v7_extract_dt(pl.col("uuid"), strict=False)
+        >>> )
+
+    """
     if isinstance(expr, str):
         expr = pl.col(expr)
 
