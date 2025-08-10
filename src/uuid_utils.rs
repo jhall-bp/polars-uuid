@@ -18,7 +18,7 @@ fn u64_pair_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
     let ca2 = inputs[1].u64()?;
 
     if ca1.len() != ca2.len() {
-        polars_bail!(InvalidOperation: "Both series must have the same length; found {} and {}", ca1.len(), ca2.len());
+        polars_bail!(ShapeMismatch: "Both inputs must have the same length; found {} and {}", ca1.len(), ca2.len());
     }
 
     let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), ca1.len());
