@@ -1,16 +1,16 @@
 [package]
 name = "polars-uuid"
-version = "0.1.7"
+version = "0.2.0"
 edition = "2024"
 
 [lib]
 name = "polars_uuid"
-crate-type= ["cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.25", features = ["extension-module", "abi3-py311"] }
 pyo3-polars = { version = "0.23.1", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
-polars = { version = "0.50.0", features=["dtype-date", "timezones"], default-features = false }
+polars = { version = "0.50.0", features = ["dtype-date", "timezones"], default-features = false }
 polars-arrow = { version = "0.50.0", default-features = false }
 uuid = { version = "1.16.0", features = ["fast-rng", "v4", "v7"] }
