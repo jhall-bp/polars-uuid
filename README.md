@@ -70,7 +70,7 @@ df = (
     .group_by(pl.col("animal").str.head(1).alias("group"))
     .agg(
         pl.col("animal"),
-        pl_uuid.uuid_v4().first().alias("id")
+        pl_uuid.uuid_v4_single().alias("id")
     )
     .explode("animal")
 )

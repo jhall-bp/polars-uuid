@@ -11,7 +11,7 @@ _ARGS = pl.repeat(
     n=pl.len(),
 )
 
-_ARGS_SINGLE = (pl.lit("", dtype=pl.String),)
+_ARGS_SINGLE = pl.lit(None, dtype=pl.Null)
 
 # Utils
 
@@ -109,8 +109,8 @@ def uuid_v4_single() -> pl.Expr:
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
-        function_name="uuid4_rand",
-        is_elementwise=True,
+        function_name="uuid4_rand_single",
+        returns_scalar=True,
     )
 
 
@@ -142,8 +142,8 @@ def uuid_v7_now_single() -> pl.Expr:
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
-        function_name="uuid7_rand_now",
-        is_elementwise=True,
+        function_name="uuid7_rand_now_single",
+        returns_scalar=True,
     )
 
 
@@ -181,8 +181,8 @@ def uuid_v7_single(*, timestamp: float) -> pl.Expr:
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
-        function_name="uuid7_rand",
-        is_elementwise=True,
+        function_name="uuid7_rand_single",
+        returns_scalar=True,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
 

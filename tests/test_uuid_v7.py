@@ -1,17 +1,17 @@
 import datetime
 
+import hypothesis.strategies as st
 import polars as pl
 import pytest
-from polars.testing import assert_series_equal
 from hypothesis import given
-import hypothesis.strategies as st
+from polars.testing import assert_series_equal
 
 from polars_uuid import (
+    is_uuid,
     uuid_v7,
     uuid_v7_extract_dt,
     uuid_v7_now,
     uuid_v7_single,
-    is_uuid,
 )
 
 

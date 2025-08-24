@@ -25,6 +25,12 @@ fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
 }
 
 #[polars_expr(output_type=String)]
+fn uuid7_rand_now_single(_inputs: &[Series]) -> PolarsResult<Series> {
+    let uuid = Uuid::now_v7();
+    Ok(Series::new(PlSmallStr::EMPTY, [uuid.to_string()]))
+}
+
+#[polars_expr(output_type=String)]
 fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     let context = ContextV7::new();
     let seconds = kwargs.seconds_since_unix_epoch.trunc() as u64;
@@ -37,6 +43,14 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     });
 
     Ok(out.into_series())
+}
+
+#[polars_expr(output_type=String)]
+fn uuid7_rand_single(_inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
+    let seconds = kwargs.seconds_since_unix_epoch.trunc() as u64;
+    let subsec_nanos = ((kwargs.seconds_since_unix_epoch.fract()) * 1_000_000_000.0).round() as u32;
+    let uuid = Uuid::new_v7(Timestamp::from_unix(uuid::NoContext, seconds, subsec_nanos));
+    Ok(Series::new(PlSmallStr::EMPTY, [uuid.to_string()]))
 }
 
 #[polars_expr(output_type_func=utc_millis_datetime_output)]

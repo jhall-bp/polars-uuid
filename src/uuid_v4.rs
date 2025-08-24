@@ -13,3 +13,9 @@ fn uuid4_rand(inputs: &[Series]) -> PolarsResult<Series> {
 
     Ok(out.into_series())
 }
+
+#[polars_expr(output_type=String)]
+fn uuid4_rand_single(_inputs: &[Series]) -> PolarsResult<Series> {
+    let uuid = Uuid::new_v4();
+    Ok(Series::new(PlSmallStr::EMPTY, [uuid.to_string()]))
+}
