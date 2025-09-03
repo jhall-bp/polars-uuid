@@ -90,6 +90,34 @@ print(df)
 #  └───────┴──────────┴──────────────────────────────────────┘
 ```
 
+## Lazy Frames
+
+`polars_uuid` works well with lazy frames, but it is important to keep in mind that the generated UUIDs will be different each time a lazy frame is collected.
+
+For example:
+
+```python
+lf = (
+    pl.LazyFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]})
+    .with_columns(pl_uuid.uuid_v7_now().alias("id"))
+)
+
+df_a = lf.collect()
+df_b = lf.collect()
+
+df_ab = df_a.join(df_b, on="id", how="inner", validate="1:1")
+print(df_ab)
+# shape: (0, 3)
+# ┌────────┬─────┬──────────────┐
+# │ animal ┆ id  ┆ animal_right │
+# │ ---    ┆ --- ┆ ---          │
+# │ str    ┆ str ┆ str          │
+# ╞════════╪═════╪══════════════╡
+# └────────┴─────┴──────────────┘
+#
+# Empty because the generated IDs are different each time lf is collected!
+```
+
 ## Benchmark
 
 I have found using the plugin to be significantly faster than using Python's `uuid` library with `polars`. The following basic benchmark gives the following results on my laptop:
