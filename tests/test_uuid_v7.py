@@ -25,7 +25,6 @@ def test_uuid_v7(timestamp: float) -> None:
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].is_unique().all()
     assert df.select(is_uuid("uuid")).to_series().all()
-    assert df["uuid"].is_sorted()
     assert df["uuid"].str.slice(0, 15).n_unique() == 1
 
 
@@ -49,7 +48,6 @@ def test_uuid_v7_now() -> None:
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].is_unique().all()
     assert df.select(is_uuid("uuid")).to_series().all()
-    assert df["uuid"].is_sorted()
     assert df["uuid"].str.slice(0, 15).n_unique() > 1
 
 

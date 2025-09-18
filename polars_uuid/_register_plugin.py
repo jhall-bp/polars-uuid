@@ -48,7 +48,7 @@ def is_uuid(expr: str | pl.Expr) -> pl.Expr:
         expr = pl.col(expr)
 
     return register_plugin_function(
-        args=(expr,),
+        args=expr,
         plugin_path=_LIB,
         function_name="is_uuid",
         is_elementwise=True,
@@ -105,7 +105,7 @@ def uuid_v4() -> pl.Expr:
 
 
 def uuid_v4_single() -> pl.Expr:
-    """Generates a series filled with the same version 4 UUID."""
+    """Generates a single version 4 UUID value."""
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
@@ -120,8 +120,6 @@ def uuid_v4_single() -> pl.Expr:
 def uuid_v7_now() -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the current system time.
-
-    The generated UUIDs are ordered within the resulting series.
 
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs.
@@ -138,7 +136,7 @@ def uuid_v7_now() -> pl.Expr:
 
 
 def uuid_v7_now_single() -> pl.Expr:
-    """Generates a series filled with the same version 7 UUID based on the current system time."""
+    """Generates a single version 7 UUID value based on the current system time."""
     return register_plugin_function(
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
@@ -150,8 +148,6 @@ def uuid_v7_now_single() -> pl.Expr:
 def uuid_v7(*, timestamp: float) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the given timestamp.
-
-    The generated UUIDs are ordered within the resulting series.
 
     Parameters:
         timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
@@ -173,7 +169,7 @@ def uuid_v7(*, timestamp: float) -> pl.Expr:
 
 
 def uuid_v7_single(*, timestamp: float) -> pl.Expr:
-    """Generates a series filled with the same version 7 UUID based on the given timestamp.
+    """Generates a single version 7 UUID value based on the given timestamp.
 
     Parameters:
         timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
@@ -211,7 +207,7 @@ def uuid_v7_extract_dt(expr: str | pl.Expr, /, *, strict: bool = True) -> pl.Exp
         expr = pl.col(expr)
 
     return register_plugin_function(
-        args=(expr,),
+        args=expr,
         plugin_path=_LIB,
         function_name="uuid7_extract_dt",
         is_elementwise=True,
