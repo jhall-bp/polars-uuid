@@ -44,9 +44,6 @@ df = (
     .with_columns(pl_uuid.uuid_v7_now().alias("id"))
 )
 
-print(df["id"].is_sorted())
-#  True
-
 print(df)
 #  shape: (5, 2)
 #  ┌──────────┬──────────────────────────────────────┐
