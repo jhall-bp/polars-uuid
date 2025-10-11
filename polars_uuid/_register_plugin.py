@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import polars as pl
-from polars.plugins import register_plugin_function
+from polars.plugins import (
+    register_plugin_function,  # pyright: ignore[reportUnknownVariableType]
+)
 
 _LIB = Path(__file__).parent
 _ARGS = pl.repeat(
