@@ -1,6 +1,6 @@
-use std::iter::zip;
+use std::fmt::Write;
 
-use polars::prelude::*;
+use polars::prelude::{arity::binary_elementwise_into_string_amortized, *};
 use pyo3_polars::derive::polars_expr;
 use uuid::Uuid;
 
@@ -14,24 +14,17 @@ fn is_uuid(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[polars_expr(output_type=String)]
 fn u64_pair_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
-    let ca1 = inputs[0].u64()?;
-    let ca2 = inputs[1].u64()?;
+    let ca_hi_bits = inputs[0].u64()?;
+    let ca_lo_bits = inputs[1].u64()?;
 
-    if ca1.len() != ca2.len() {
-        polars_bail!(ShapeMismatch: "Both inputs must have the same length; found {} and {}", ca1.len(), ca2.len());
-    }
+    let out = binary_elementwise_into_string_amortized(
+        ca_hi_bits,
+        ca_lo_bits,
+        |hi_bits, lo_bits, output| {
+            let uuid = Uuid::from_u64_pair(hi_bits, lo_bits);
+            write!(output, "{}", uuid).unwrap()
+        },
+    );
 
-    let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), ca1.len());
-
-    for opt_values in zip(ca1.into_iter(), ca2.into_iter()) {
-        match opt_values {
-            (Some(high), Some(low)) => {
-                let uuid = Uuid::from_u64_pair(high, low);
-                builder.append_value(uuid.to_string());
-            },
-            _ => builder.append_null(),
-        }
-    }
-
-    Ok(builder.finish().into_series())
+    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
 }
