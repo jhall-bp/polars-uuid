@@ -8,10 +8,7 @@ from polars.plugins import (
 )
 
 _LIB = Path(__file__).parent
-_ARGS = pl.repeat(
-    pl.lit("", dtype=pl.String),
-    n=pl.len(),
-)
+_ARGS = pl.first()
 
 _ARGS_SINGLE = pl.lit(None, dtype=pl.Null)
 
@@ -112,6 +109,7 @@ def uuid_v4_single() -> pl.Expr:
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
         function_name="uuid4_rand_single",
+        is_elementwise=True,
         returns_scalar=True,
     )
 
@@ -143,6 +141,7 @@ def uuid_v7_now_single() -> pl.Expr:
         args=_ARGS_SINGLE,
         plugin_path=_LIB,
         function_name="uuid7_rand_now_single",
+        is_elementwise=True,
         returns_scalar=True,
     )
 
@@ -181,6 +180,7 @@ def uuid_v7_single(*, timestamp: float) -> pl.Expr:
         plugin_path=_LIB,
         function_name="uuid7_rand_single",
         returns_scalar=True,
+        is_elementwise=True,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
 

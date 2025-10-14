@@ -1,5 +1,3 @@
-use std::fmt::Write;
-
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use uuid::{ContextV7, Timestamp, Uuid};
@@ -29,12 +27,12 @@ struct ExtractDatetimeKwargs {
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
-    let ca = inputs[0].str()?;
-    let out = ca.apply_into_string_amortized(|_value: &str, output: &mut String| {
-        write!(output, "{}", Uuid::now_v7()).unwrap()
-    });
-
-    Ok(out.into_series())
+    let height = inputs[0].len();
+    let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
+    for _ in 0..height {
+        builder.append_value(Uuid::now_v7().to_string());
+    }
+    Ok(builder.finish().into_series())
 }
 
 #[polars_expr(output_type=String)]
@@ -51,13 +49,13 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     let context = ContextV7::new();
     let (seconds, subsec_nanos) = kwargs.get_secs_and_subsec_nanosecs();
 
-    let ca = inputs[0].str()?;
-    let out = ca.apply_into_string_amortized(|_value: &str, output: &mut String| {
+    let height = inputs[0].len();
+    let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
+    for _ in 0..height {
         let timestamp = Timestamp::from_unix(&context, seconds, subsec_nanos);
-        write!(output, "{}", Uuid::new_v7(timestamp)).unwrap()
-    });
-
-    Ok(out.into_series())
+        builder.append_value(Uuid::new_v7(timestamp).to_string());
+    }
+    Ok(builder.finish().into_series())
 }
 
 #[polars_expr(output_type=String)]
