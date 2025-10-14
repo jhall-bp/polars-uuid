@@ -11,7 +11,6 @@ from polars_uuid import (
     uuid_v7,
     uuid_v7_extract_dt,
     uuid_v7_now,
-    uuid_v7_single,
 )
 
 
@@ -31,7 +30,7 @@ def test_uuid_v7(timestamp: float) -> None:
 @given(st.floats(min_value=0))
 def test_uuid_v7_single(timestamp: float) -> None:
     df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
-        uuid=uuid_v7_single(timestamp=timestamp)
+        uuid=uuid_v7(timestamp=timestamp, scalar=True)
     )
 
     assert df["uuid"].null_count() == 0

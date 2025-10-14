@@ -85,7 +85,7 @@ def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl
 # UUIDv4
 
 
-def uuid_v4() -> pl.Expr:
+def uuid_v4(*, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 4 UUIDs.
 
@@ -95,29 +95,26 @@ def uuid_v4() -> pl.Expr:
     Example:
         >>> df.with_columns(uuid=uuid_v4())
     """
-    return register_plugin_function(
-        args=_ARGS,
-        plugin_path=_LIB,
-        function_name="uuid4_rand",
-        is_elementwise=True,
-    )
+    if scalar:
+        args = _ARGS_SINGLE
+        fn_name = "uuid4_rand_single"
+    else:
+        args = _ARGS
+        fn_name = "uuid4_rand"
 
-
-def uuid_v4_single() -> pl.Expr:
-    """Generates a single version 4 UUID value."""
     return register_plugin_function(
-        args=_ARGS_SINGLE,
+        args=args,
         plugin_path=_LIB,
-        function_name="uuid4_rand_single",
+        function_name=fn_name,
         is_elementwise=True,
-        returns_scalar=True,
+        returns_scalar=scalar,
     )
 
 
 # UUIDv7
 
 
-def uuid_v7_now() -> pl.Expr:
+def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the current system time.
 
@@ -127,26 +124,23 @@ def uuid_v7_now() -> pl.Expr:
     Example:
         >>> df.with_columns(uuid=uuid_v7_now())
     """
+    if scalar:
+        args = _ARGS_SINGLE
+        fn_name = "uuid7_rand_now_single"
+    else:
+        args = _ARGS
+        fn_name = "uuid7_rand_now"
+
     return register_plugin_function(
-        args=_ARGS,
+        args=args,
         plugin_path=_LIB,
-        function_name="uuid7_rand_now",
+        function_name=fn_name,
         is_elementwise=True,
+        returns_scalar=scalar,
     )
 
 
-def uuid_v7_now_single() -> pl.Expr:
-    """Generates a single version 7 UUID value based on the current system time."""
-    return register_plugin_function(
-        args=_ARGS_SINGLE,
-        plugin_path=_LIB,
-        function_name="uuid7_rand_now_single",
-        is_elementwise=True,
-        returns_scalar=True,
-    )
-
-
-def uuid_v7(*, timestamp: float) -> pl.Expr:
+def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the given timestamp.
 
@@ -160,27 +154,19 @@ def uuid_v7(*, timestamp: float) -> pl.Expr:
         >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
         >>> df.with_columns(uuid=uuid_v7(timestamp=dt.timestamp()))
     """
+    if scalar:
+        args = _ARGS_SINGLE
+        fn_name = "uuid7_rand_single"
+    else:
+        args = _ARGS
+        fn_name = "uuid7_rand"
+
     return register_plugin_function(
-        args=_ARGS,
+        args=args,
         plugin_path=_LIB,
-        function_name="uuid7_rand",
+        function_name=fn_name,
         is_elementwise=True,
-        kwargs={"seconds_since_unix_epoch": timestamp},
-    )
-
-
-def uuid_v7_single(*, timestamp: float) -> pl.Expr:
-    """Generates a single version 7 UUID value based on the given timestamp.
-
-    Parameters:
-        timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
-    """
-    return register_plugin_function(
-        args=_ARGS_SINGLE,
-        plugin_path=_LIB,
-        function_name="uuid7_rand_single",
-        returns_scalar=True,
-        is_elementwise=True,
+        returns_scalar=scalar,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )
 

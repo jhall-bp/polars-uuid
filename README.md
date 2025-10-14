@@ -67,7 +67,7 @@ df = (
     .group_by(pl.col("animal").str.head(1).alias("group"))
     .agg(
         pl.col("animal"),
-        pl_uuid.uuid_v4_single().alias("id")
+        pl_uuid.uuid_v4(scalar=True).alias("id"),  # set scalar to True to generate a single UUID per group
     )
     .explode("animal")
 )
