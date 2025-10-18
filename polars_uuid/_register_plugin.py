@@ -106,7 +106,7 @@ def uuid_v4(*, scalar: bool = False) -> pl.Expr:
         args=args,
         plugin_path=_LIB,
         function_name=fn_name,
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
     )
 
@@ -135,7 +135,7 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
         args=args,
         plugin_path=_LIB,
         function_name=fn_name,
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
     )
 
@@ -165,7 +165,7 @@ def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
         args=args,
         plugin_path=_LIB,
         function_name=fn_name,
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
         kwargs={"seconds_since_unix_epoch": timestamp},
     )

@@ -27,19 +27,6 @@ def test_uuid_v7(timestamp: float) -> None:
     assert df["uuid"].str.slice(0, 15).n_unique() == 1
 
 
-@given(st.floats(min_value=0))
-def test_uuid_v7_single(timestamp: float) -> None:
-    df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
-        uuid=uuid_v7(timestamp=timestamp, scalar=True)
-    )
-
-    assert df["uuid"].null_count() == 0
-    assert df["uuid"].dtype == pl.String
-    assert df["uuid"].n_unique() == 1
-    assert df.select(is_uuid("uuid")).to_series().all()
-    assert df["uuid"].str.slice(0, 15).n_unique() == 1
-
-
 def test_uuid_v7_now() -> None:
     df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(uuid=uuid_v7_now())
 

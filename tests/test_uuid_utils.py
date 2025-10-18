@@ -1,11 +1,12 @@
 import uuid
 
-import polars as pl
-from polars.testing import assert_series_equal
 import hypothesis.strategies as st
+import polars as pl
 from hypothesis import given
-from polars_uuid import is_uuid, u64_pair_to_uuid, uuid_v4
+from polars.testing import assert_series_equal
 from polars.testing.parametric import column, dataframes
+
+from polars_uuid import is_uuid, u64_pair_to_uuid, uuid_v4
 
 
 def test_is_uuid() -> None:

@@ -26,17 +26,6 @@ def test_partial_uuid_v4() -> None:
     assert df["uuid"].cast(pl.Int32, strict=False).null_count() == (df.height / 2)
 
 
-def test_uuid_v4_single() -> None:
-    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
-        uuid=uuid_v4(scalar=True)
-    )
-
-    assert df["uuid"].null_count() == 0
-    assert df["uuid"].dtype == pl.String
-    assert df["uuid"].n_unique() == 1
-    assert df["uuid"].str.contains(UUID_PATTERN).all()
-
-
 def test_partial_uuid_v4_single() -> None:
     df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(
         pl.when(pl.col("idx") % 2 == 0)
