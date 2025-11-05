@@ -116,7 +116,7 @@ dev = [
 dev = [
     { name = "hypothesis", specifier = ">=6.137.1" },
     { name = "maturin", specifier = ">=1.9.0" },
-    { name = "polars", specifier = ">=1.35.0" },
+    { name = "polars", specifier = ">=1.35.1" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "ruff", specifier = ">=0.12.2" },
 ]

@@ -75,7 +75,7 @@ jobs:
         run: rustup show
       - uses: mozilla-actions/sccache-action@v0.0.6
       - run: make venv
-      - run: uv pip install polars==1.31.0 # min version
+      - run: uv pip install polars==1.35.1 # min version
       - run: make install
       - run: make test
 
