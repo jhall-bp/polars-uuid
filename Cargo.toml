@@ -8,9 +8,8 @@ name = "polars_uuid"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.25", features = ["extension-module", "abi3-py311"] }
-pyo3-polars = { version = "0.23.1", features = ["derive"] }
+polars = { version = "0.52.0", features = ["dtype-date", "timezones"], default-features = false }
+pyo3 = { version = "0.26.0", features = ["extension-module", "abi3-py311"] }
+pyo3-polars = { version = "0.25.0", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
-polars = { version = "0.50.0", features = ["dtype-date", "timezones"], default-features = false }
-polars-arrow = { version = "0.50.0", default-features = false }
 uuid = { version = "1.16.0", features = ["fast-rng", "v4", "v7"] }
