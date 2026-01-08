@@ -5,6 +5,7 @@ import polars as pl
 import pytest
 from hypothesis import given
 from polars.testing import assert_series_equal
+from polars.testing.parametric import column, dataframes
 
 from polars_uuid import (
     is_uuid,
@@ -14,7 +15,7 @@ from polars_uuid import (
 )
 
 
-@given(st.floats(min_value=0))
+@given(st.floats(min_value=0, max_value=(2**48 - 1) / 1000))
 def test_uuid_v7(timestamp: float) -> None:
     df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
         uuid=uuid_v7(timestamp=timestamp)
@@ -87,3 +88,47 @@ def test_uuid_v7_extract_dt_strict_mode() -> None:
 
     assert df["dt"].dtype == pl.Datetime("ms", "UTC")
     assert df["dt"].null_count() == df.height
+
+
+@given(
+    dataframes(
+        column(
+            name="dt",
+            dtype=pl.Datetime("ms", "UTC"),
+            strategy=st.datetimes(
+                min_value=datetime.datetime(1970, 1, 1),
+                timezones=st.just(datetime.UTC),
+            ),
+        ),
+        max_size=100,
+    )
+)
+def test_dynamic_timestamp(df: pl.DataFrame) -> None:
+    df = (
+        df.with_columns(uuid=uuid_v7(timestamp="dt"))
+        .with_columns(dt_rt=uuid_v7_extract_dt("uuid"))
+        .with_columns(eq=pl.col("dt_rt") == pl.first())
+    )
+
+    assert df["eq"].all()
+    assert df.height == (df["eq"].sum() + df["eq"].null_count())
+
+
+@given(
+    st.datetimes(
+        min_value=datetime.datetime.fromtimestamp(0),
+        timezones=st.timezones(),
+        allow_imaginary=False,
+    )
+)
+def test_sorting(dt: datetime.datetime) -> None:
+    timestamp = dt.timestamp()
+    timestamp_ms = int(timestamp * 1_000)
+    df = (
+        pl.DataFrame({"idx": list(range(100_000))})
+        .with_columns(uuid=uuid_v7(timestamp=timestamp))
+        .with_columns(dt=uuid_v7_extract_dt("uuid"))
+        .with_columns(timestamp=pl.col("dt").dt.epoch("ms"))
+    )
+    assert df["uuid"].is_sorted()
+    assert ((df["timestamp"] - timestamp_ms).abs() <= 1).all()
