@@ -1,5 +1,6 @@
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
+use std::fmt::Write;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 // Kwarg Structs
@@ -24,6 +25,24 @@ struct ExtractDatetimeKwargs {
 }
 
 // Random
+
+#[polars_expr(output_type=String)]
+fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
+    let datetimes = inputs[0]
+        .datetime()?
+        .cast_time_unit(TimeUnit::Milliseconds)
+        .into_physical();
+    let context = uuid::NoContext;
+    let out: StringChunked =
+        datetimes.apply_into_string_amortized(|timestamp_ms: i64, output: &mut String| {
+            let secs = timestamp_ms.div_euclid(1_000) as u64;
+            let subsec_nanos = (timestamp_ms.rem_euclid(1_000) * 1_000_000) as u32;
+            let timestamp = uuid::Timestamp::from_unix(&context, secs, subsec_nanos);
+            let uuid_v7 = Uuid::new_v7(timestamp);
+            write!(output, "{}", uuid_v7).unwrap()
+        });
+    Ok(out.into_series())
+}
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {

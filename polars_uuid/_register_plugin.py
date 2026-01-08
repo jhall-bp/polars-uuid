@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import overload
 
 import polars as pl
 from polars.plugins import (
@@ -140,12 +141,13 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
     )
 
 
-def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
+@overload
+def uuid_v7(*, timestamp: int | float, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the given timestamp.
 
     Parameters:
-        timestamp (float): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
+        timestamp (int | float | str | pl.Expr): The timestamp to use when generating UUIDs in seconds since the UNIX epoch.
 
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
@@ -154,12 +156,51 @@ def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
         >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
         >>> df.with_columns(uuid=uuid_v7(timestamp=dt.timestamp()))
     """
-    if scalar:
-        args = _ARGS_SINGLE
-        fn_name = "uuid7_rand_single"
+
+
+@overload
+def uuid_v7(*, timestamp: str | pl.Expr) -> pl.Expr:
+    """
+    Generates a series of random version 7 UUIDs based on the given timestamp values.
+
+    Parameters:
+        timestamp (str | pl.Expr): The timestamp to use when generating UUIDs in seconds since the UNIX epoch. String values are treated as column names.
+
+    Returns:
+        pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
+
+    Example:
+        >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
+        >>> df.with_columns(uuid=uuid_v7(timestamp=pl.col("created_at")))
+    """
+
+
+def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> pl.Expr:
+    """
+    Generates a series of random version 7 UUIDs based on the given timestamp.
+
+    Parameters:
+        timestamp (float | str | pl.Expr): The timestamp to use when generating UUIDs in seconds since the UNIX epoch. Float values are treated as literals and string values are treated as column names.
+
+    Returns:
+        pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
+
+    Example:
+        >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
+        >>> df.with_columns(uuid=uuid_v7(timestamp=dt.timestamp()))
+    """
+    if isinstance(timestamp, (float, int)):
+        kwargs: dict[str, object] = {"seconds_since_unix_epoch": timestamp}
+        if scalar:
+            args = _ARGS_SINGLE
+            fn_name = "uuid7_rand_single"
+        else:
+            args = _ARGS
+            fn_name = "uuid7_rand"
     else:
-        args = _ARGS
-        fn_name = "uuid7_rand"
+        args = pl.col(timestamp) if isinstance(timestamp, str) else timestamp
+        kwargs: dict[str, object] = {}
+        fn_name = "uuid7_rand_dynamic"
 
     return register_plugin_function(
         args=args,
@@ -167,7 +208,7 @@ def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
         function_name=fn_name,
         is_elementwise=not scalar,
         returns_scalar=scalar,
-        kwargs={"seconds_since_unix_epoch": timestamp},
+        kwargs=kwargs,
     )
 
 
