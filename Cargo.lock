@@ -1936,7 +1936,7 @@ dependencies = [
 
 [[package]]
 name = "polars-uuid"
-version = "0.5.3"
+version = "0.5.4"
 dependencies = [
  "polars",
  "pyo3",
