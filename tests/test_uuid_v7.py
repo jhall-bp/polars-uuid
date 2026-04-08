@@ -72,7 +72,7 @@ def test_uuid_v7_extract_dt() -> None:
 def test_uuid_v7_extract_dt_strict_mode() -> None:
     with pytest.raises(
         pl.exceptions.ComputeError,
-        match=r"Failed to extract timestamp from UUID string: .+$",
+        match=r"Failed to extract timestamp from UUID string: .+",
     ):
         df = (
             pl.DataFrame({"idx": list(range(100_000))})
