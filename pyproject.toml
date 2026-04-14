@@ -21,9 +21,9 @@ ignore_missing_imports = true
 
 [dependency-groups]
 dev = [
-    "hypothesis>=6.137.1",
-    "maturin>=1.9.0",
+    "hypothesis>=6.151.0",
+    "maturin>=1.13.0",
     "polars>=1.38.0",
     "pytest>=8.3.5",
-    "ruff>=0.12.2",
+    "ruff>=0.15.10",
 ]
