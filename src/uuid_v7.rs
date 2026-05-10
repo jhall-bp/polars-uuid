@@ -46,10 +46,11 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
+    let mut buffer = Uuid::encode_buffer();
     let height = inputs[0].len();
     let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
     for _ in 0..height {
-        builder.append_value(Uuid::now_v7().to_string());
+        builder.append_value(Uuid::now_v7().hyphenated().encode_lower(&mut buffer));
     }
     Ok(builder.finish().into_series())
 }
@@ -68,11 +69,12 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     let context = ContextV7::new();
     let (seconds, subsec_nanos) = kwargs.get_secs_and_subsec_nanosecs();
 
+    let mut buffer = Uuid::encode_buffer();
     let height = inputs[0].len();
     let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
     for _ in 0..height {
         let timestamp = Timestamp::from_unix(&context, seconds, subsec_nanos);
-        builder.append_value(Uuid::new_v7(timestamp).to_string());
+        builder.append_value(Uuid::new_v7(timestamp).hyphenated().encode_lower(&mut buffer));
     }
     Ok(builder.finish().into_series())
 }
