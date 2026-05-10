@@ -1,6 +1,7 @@
+use std::fmt::Write;
+
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use std::fmt::Write;
 use uuid::{ContextV7, Timestamp, Uuid};
 
 // Kwarg Structs
@@ -37,7 +38,7 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
         datetimes.apply_into_string_amortized(|timestamp_ms: i64, output: &mut String| {
             let secs = timestamp_ms.div_euclid(1_000) as u64;
             let subsec_nanos = (timestamp_ms.rem_euclid(1_000) * 1_000_000) as u32;
-            let timestamp = uuid::Timestamp::from_unix(&context, secs, subsec_nanos);
+            let timestamp = uuid::Timestamp::from_unix(context, secs, subsec_nanos);
             let uuid_v7 = Uuid::new_v7(timestamp);
             write!(output, "{}", uuid_v7).unwrap()
         });
@@ -74,7 +75,11 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
     for _ in 0..height {
         let timestamp = Timestamp::from_unix(&context, seconds, subsec_nanos);
-        builder.append_value(Uuid::new_v7(timestamp).hyphenated().encode_lower(&mut buffer));
+        builder.append_value(
+            Uuid::new_v7(timestamp)
+                .hyphenated()
+                .encode_lower(&mut buffer),
+        );
     }
     Ok(builder.finish().into_series())
 }

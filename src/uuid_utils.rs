@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
-use polars::prelude::{arity::binary_elementwise_into_string_amortized, *};
+use polars::prelude::arity::binary_elementwise_into_string_amortized;
+use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use uuid::Uuid;
 
