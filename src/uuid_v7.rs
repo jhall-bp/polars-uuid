@@ -42,7 +42,7 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
             let uuid_v7 = Uuid::new_v7(timestamp);
             write!(output, "{}", uuid_v7).unwrap()
         });
-    Ok(out.into_series())
+    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
 }
 
 #[polars_expr(output_type=String)]

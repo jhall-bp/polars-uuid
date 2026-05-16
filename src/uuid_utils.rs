@@ -1,7 +1,6 @@
 use std::fmt::Write;
 
-use polars::prelude::arity::binary_elementwise_into_string_amortized;
-use polars::prelude::*;
+use polars::prelude::{arity::binary_elementwise_into_string_amortized, *};
 use pyo3_polars::derive::polars_expr;
 use uuid::Uuid;
 
@@ -10,7 +9,9 @@ fn is_uuid(inputs: &[Series]) -> PolarsResult<Series> {
     let ca: &StringChunked = inputs[0].str()?;
     let out: BooleanChunked =
         ca.apply_nonnull_values_generic(DataType::Boolean, |x| Uuid::parse_str(x).is_ok());
-    Ok(out.into_series())
+    Ok(out
+        .into_series()
+        .with_name(PlSmallStr::from_static("is_uuid")))
 }
 
 #[polars_expr(output_type=String)]

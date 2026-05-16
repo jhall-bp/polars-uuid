@@ -1,3 +1,21 @@
-group_imports = "StdExternalCrate"
-imports_granularity = "Module"
+style_edition = "2024"
+
+# Trailing Commas
+trailing_comma = "Vertical"
 match_block_trailing_comma = true
+
+# Imports
+reorder_imports = true
+reorder_modules = true
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+
+# Code
+chain_indent = "Visual"
+
+# Comments
+wrap_comments = true
+format_code_in_doc_comments = true
+comment_width = 120
+normalize_comments = true
+normalize_doc_attributes = true
