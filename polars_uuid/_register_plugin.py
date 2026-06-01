@@ -5,7 +5,7 @@ from typing import overload
 
 import polars as pl
 from polars.plugins import (
-    register_plugin_function,  # pyright: ignore[reportUnknownVariableType]
+    register_plugin_function,
 )
 
 _LIB = Path(__file__).parent
