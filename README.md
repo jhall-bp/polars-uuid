@@ -117,33 +117,12 @@ print(df_ab)
 
 ## Benchmark
 
-I have found using the plugin to be significantly faster than using Python's `uuid` library with `polars`. The following basic benchmark gives the following results on my laptop:
+### Generate a DataFrame with 10 000 UUIDv4 Values
 
-```python
-import timeit
-import uuid
+| Method                  | Time (1 000 iterations) | Relative `polars_uuid` |
+| ----------------------- | ----------------------- | ---------------------- |
+| `polars_uuid`           | 2.34s                   | Baseline               |
+| `uuid` + `map_elements` | 138.49s                 | 59.2x slower           |
+| `duckdb`                | 1.95s                   | 1.2x faster            |
 
-import polars as pl
-
-from polars_uuid import uuid_v4
-
-
-def uuid_py() -> None:
-    df = (
-        pl.LazyFrame({"a": [i for i in range(10_000)]})
-        .with_columns(id=pl.first().map_elements(lambda _: str(uuid.uuid4()), return_dtype=pl.String))
-    )
-    df.collect()
-
-
-def uuid_plugin() -> None:
-    df = (
-        pl.LazyFrame({"a": [i for i in range(10_000)]})
-        .with_columns(id=uuid_v4())
-    )
-    df.collect()
-
-
-timeit.timeit(uuid_py, number=10_000)       #  180.12 seconds
-timeit.timeit(uuid_plugin, number=10_000)   #    5.86 seconds (~30x faster)
-```
+See [benchmarks](benchmarks/uuid4_generation.py) for more details.
