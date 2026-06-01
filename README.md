@@ -117,7 +117,7 @@ print(df_ab)
 
 ## Benchmark
 
-### Generate a DataFrame with 10 000 UUIDv4 Values
+### Generate an Arrow Table with 10 000 UUIDv4 Values
 
 | Method                  | Time (1 000 iterations) | Relative `polars_uuid` |
 | ----------------------- | ----------------------- | ---------------------- |
