@@ -32,13 +32,14 @@ fn u128_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
 fn u64_pair_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
     let ca_hi_bits = inputs[0].u64()?;
     let ca_lo_bits = inputs[1].u64()?;
+    let mut buffer = Uuid::encode_buffer();
 
     let out = binary_elementwise_into_string_amortized(
         ca_hi_bits,
         ca_lo_bits,
         |hi_bits, lo_bits, output| {
             let uuid = Uuid::from_u64_pair(hi_bits, lo_bits);
-            write!(output, "{}", uuid).unwrap()
+            output.write_str(uuid.as_hyphenated().encode_lower(&mut buffer)).unwrap()
         },
     );
 
