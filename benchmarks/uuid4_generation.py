@@ -58,6 +58,6 @@ if __name__ == "__main__":
     polars_seconds = timeit.timeit(run_polars_uuid, number=ITERATIONS)
     duckdb_seconds = timeit.timeit(run_duckdb, number=ITERATIONS)
 
-    pr
+    print(f"python_uuid: {python_seconds:.6f} seconds")
     print(f"polars_uuid: {polars_seconds:.6f} seconds")
     print(f"duckdb:      {duckdb_seconds:.6f} seconds")
