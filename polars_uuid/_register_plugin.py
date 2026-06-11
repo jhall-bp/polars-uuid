@@ -66,7 +66,7 @@ def u128_to_uuid(values: str | pl.Expr, /) -> pl.Expr:
         pl.Expr: A polars expression that produces a `Series` of UUID strings.
 
     Notes:
-        - Both `high_bits` and `low_bits` must refer to columns or expressions of equal length.
+        - The resulting strings may not be valid UUIDs according to RFC 4122 / RFC 9562.
     """
     if isinstance(values, str):
         values = pl.col(values)
@@ -92,6 +92,7 @@ def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl
 
     Notes:
         - Both `high_bits` and `low_bits` must refer to columns or expressions of equal length.
+        - The resulting strings may not be valid UUIDs according to RFC 4122 / RFC 9562.
     """
     if isinstance(high_bits, str):
         high_bits = pl.col(high_bits)
