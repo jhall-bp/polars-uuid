@@ -55,16 +55,40 @@ def is_uuid(expr: str | pl.Expr) -> pl.Expr:
     )
 
 
+def u128_to_uuid(values: str | pl.Expr, /) -> pl.Expr:
+    """
+    Converts u128 integers into UUID strings.
+
+    Parameters:
+        values (str | pl.Expr): The column name or polars expression representing the u128 values.
+
+    Returns:
+        pl.Expr: A polars expression that produces a `Series` of UUID strings.
+
+    Notes:
+        - Both `high_bits` and `low_bits` must refer to columns or expressions of equal length.
+    """
+    if isinstance(values, str):
+        values = pl.col(values)
+
+    return register_plugin_function(
+        args=values,
+        plugin_path=_LIB,
+        function_name="u128_to_uuid_string",
+        is_elementwise=True,
+    )
+
+
 def u64_pair_to_uuid(*, high_bits: str | pl.Expr, low_bits: str | pl.Expr) -> pl.Expr:
     """
-    Converts two 64-bit integer into UUID strings.
+    Converts two 64-bit integers into UUID strings.
 
     Parameters:
         high_bits (str | pl.Expr): The column name or polars expression representing the high 64 bits of the UUID.
         low_bits (str | pl.Expr): The column name or polars expression representing the low 64 bits of the UUID.
 
     Returns:
-        pl.Expr: A polars expression that produces a Series of UUID strings.
+        pl.Expr: A polars expression that produces a `Series` of UUID strings.
 
     Notes:
         - Both `high_bits` and `low_bits` must refer to columns or expressions of equal length.

@@ -6,7 +6,7 @@ from hypothesis import given
 from polars.testing import assert_series_equal
 from polars.testing.parametric import column, dataframes
 
-from polars_uuid import is_uuid, u64_pair_to_uuid, uuid_v4
+from polars_uuid import is_uuid, u64_pair_to_uuid, uuid_v4, u128_to_uuid
 
 
 def test_is_uuid() -> None:
@@ -31,6 +31,36 @@ def test_is_uuid() -> None:
     assert df["is_not_uuid"].not_().all()
     assert df["is_null"].dtype == pl.Boolean
     assert df["is_null"].null_count() == df.height
+
+
+@given(
+    dataframes(
+        cols=[
+            column(
+                "values",
+                dtype=pl.UInt128,
+            ),
+        ],
+        min_size=5,
+        lazy=True,
+    )
+)
+def test_u128_to_uuid(lf: pl.LazyFrame) -> None:
+    def py_u128_to_uuid(val: int) -> str:
+        return str(uuid.UUID(int=val))
+
+    df = lf.with_columns(
+        uuid=u128_to_uuid("values"),
+        uuid_py=pl.col("values").map_elements(
+            py_u128_to_uuid, return_dtype=pl.String
+        ),
+    ).collect()
+
+    assert df["uuid"].null_count() == df["values"].null_count()
+    assert df["uuid"].dtype == pl.String
+    assert df["uuid_py"].null_count() == df["values"].null_count()
+    assert df["uuid_py"].dtype == pl.String
+    assert_series_equal(df["uuid"], df["uuid_py"], check_names=False)
 
 
 @given(

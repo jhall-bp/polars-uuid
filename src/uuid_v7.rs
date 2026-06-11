@@ -98,13 +98,13 @@ fn uuid7_rand_single(_inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Se
 
 #[polars_expr(output_type_func=utc_millis_datetime_output)]
 fn uuid7_extract_dt(inputs: &[Series], kwargs: ExtractDatetimeKwargs) -> PolarsResult<Series> {
-    let ca: &StringChunked = inputs[0].str()?;
+    let ca = inputs[0].str()?;
 
     let mut builder: PrimitiveChunkedBuilder<Int64Type> =
         PrimitiveChunkedBuilder::new(PlSmallStr::from_static("timestamp"), ca.len());
 
     if kwargs.strict {
-        for opt_value in ca.into_iter() {
+        for opt_value in ca.iter() {
             if let Some(value) = opt_value {
                 if let Some(timestamp) = parse_timestamp_from_uuid_string(value) {
                     builder.append_value(timestamp);
@@ -116,7 +116,7 @@ fn uuid7_extract_dt(inputs: &[Series], kwargs: ExtractDatetimeKwargs) -> PolarsR
             }
         }
     } else {
-        for opt_value in ca.into_iter() {
+        for opt_value in ca.iter() {
             let timestamp = opt_value.and_then(parse_timestamp_from_uuid_string);
             builder.append_option(timestamp);
         }
