@@ -34,13 +34,16 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
         .cast_time_unit(TimeUnit::Milliseconds)
         .into_physical();
     let context = uuid::NoContext;
+    let mut buffer = Uuid::encode_buffer();
     let out: StringChunked =
         datetimes.apply_into_string_amortized(|timestamp_ms: i64, output: &mut String| {
             let secs = timestamp_ms.div_euclid(1_000) as u64;
             let subsec_nanos = (timestamp_ms.rem_euclid(1_000) * 1_000_000) as u32;
             let timestamp = uuid::Timestamp::from_unix(context, secs, subsec_nanos);
             let uuid_v7 = Uuid::new_v7(timestamp);
-            write!(output, "{}", uuid_v7).unwrap()
+            output
+                .write_str(uuid_v7.as_hyphenated().encode_lower(&mut buffer))
+                .unwrap()
         });
     Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
 }

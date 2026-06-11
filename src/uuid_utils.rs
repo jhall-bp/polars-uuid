@@ -23,8 +23,7 @@ fn u128_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
         let uuid = Uuid::from_u128(value);
         let uuid_str = uuid.as_hyphenated().encode_lower(&mut buffer);
         out.write_str(uuid_str).unwrap();
-    }
-    );
+    });
 
     Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
 }
