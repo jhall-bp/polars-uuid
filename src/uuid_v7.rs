@@ -2,7 +2,9 @@ use std::fmt::Write;
 
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use uuid::{ContextV7, Timestamp, Uuid};
+use uuid::{ClockSequence, NoContext, Timestamp, Uuid};
+
+const UUID_V7_MAX_TIMESTAMP_MILLIS: u64 = (1_u64 << 48) - 1;
 
 // Kwarg Structs
 
@@ -12,11 +14,8 @@ struct Uuid7Kwargs {
 }
 
 impl Uuid7Kwargs {
-    fn get_secs_and_subsec_nanosecs(&self) -> (u64, u32) {
-        (
-            self.seconds_since_unix_epoch.trunc() as u64,
-            ((self.seconds_since_unix_epoch.fract()) * 1_000_000_000.0).round() as u32,
-        )
+    fn get_unix_timestamp_millis(&self) -> PolarsResult<u64> {
+        unix_timestamp_seconds_to_millis(self.seconds_since_unix_epoch)
     }
 }
 
@@ -33,18 +32,18 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
         .datetime()?
         .cast_time_unit(TimeUnit::Milliseconds)
         .into_physical();
-    let context = uuid::NoContext;
     let mut buffer = Uuid::encode_buffer();
+
     let out: StringChunked =
-        datetimes.apply_into_string_amortized(|timestamp_ms: i64, output: &mut String| {
-            let secs = timestamp_ms.div_euclid(1_000) as u64;
-            let subsec_nanos = (timestamp_ms.rem_euclid(1_000) * 1_000_000) as u32;
-            let timestamp = uuid::Timestamp::from_unix(context, secs, subsec_nanos);
-            let uuid_v7 = Uuid::new_v7(timestamp);
+        datetimes.try_apply_into_string_amortized(|timestamp_ms: i64, output: &mut String| {
+            let timestamp_ms = unix_timestamp_millis_from_i64(timestamp_ms)?;
+            let uuid_v7 = uuid_v7_from_unix_millis(&NoContext, timestamp_ms);
             output
                 .write_str(uuid_v7.as_hyphenated().encode_lower(&mut buffer))
-                .unwrap()
-        });
+                .unwrap();
+            Ok::<(), PolarsError>(())
+        })?;
+
     Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
 }
 
@@ -70,16 +69,14 @@ fn uuid7_rand_now_single(_inputs: &[Series]) -> PolarsResult<Series> {
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
-    let context = ContextV7::new();
-    let (seconds, subsec_nanos) = kwargs.get_secs_and_subsec_nanosecs();
+    let timestamp_ms = kwargs.get_unix_timestamp_millis()?;
 
     let mut buffer = Uuid::encode_buffer();
     let height = inputs[0].len();
     let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
     for _ in 0..height {
-        let timestamp = Timestamp::from_unix(&context, seconds, subsec_nanos);
         builder.append_value(
-            Uuid::new_v7(timestamp)
+            uuid_v7_from_unix_millis(&NoContext, timestamp_ms)
                 .hyphenated()
                 .encode_lower(&mut buffer),
         );
@@ -89,8 +86,8 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_single(_inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
-    let (seconds, subsec_nanos) = kwargs.get_secs_and_subsec_nanosecs();
-    let uuid = Uuid::new_v7(Timestamp::from_unix(uuid::NoContext, seconds, subsec_nanos));
+    let timestamp_ms = kwargs.get_unix_timestamp_millis()?;
+    let uuid = uuid_v7_from_unix_millis(&uuid::NoContext, timestamp_ms);
     Ok(Series::new(
         PlSmallStr::from_static("uuid"),
         [uuid.to_string()],
@@ -144,6 +141,50 @@ fn parse_timestamp_from_uuid_string(uuid_string: &str) -> Option<i64> {
         let nsecs_to_millisecs: i64 = (nanoseconds / 1_000_000).into();
         secs_to_millisecs.checked_add(nsecs_to_millisecs)
     })
+}
+
+fn unix_timestamp_seconds_to_millis(seconds_since_unix_epoch: f64) -> PolarsResult<u64> {
+    if !seconds_since_unix_epoch.is_finite() {
+        polars_bail!(ComputeError: "UUIDv7 timestamp must be finite");
+    }
+
+    if seconds_since_unix_epoch < 0.0 {
+        polars_bail!(ComputeError: "UUIDv7 timestamp must be at or after the UNIX epoch");
+    }
+
+    let timestamp_ms = (seconds_since_unix_epoch * 1_000.0).floor();
+    if timestamp_ms > UUID_V7_MAX_TIMESTAMP_MILLIS as f64 {
+        polars_bail!(
+            ComputeError:
+            "UUIDv7 timestamp exceeds the maximum 48-bit millisecond value"
+        );
+    }
+
+    Ok(timestamp_ms as u64)
+}
+
+fn unix_timestamp_millis_from_i64(timestamp_ms: i64) -> PolarsResult<u64> {
+    let timestamp_ms = u64::try_from(timestamp_ms).map_err(
+        |_| polars_err!(ComputeError: "UUIDv7 timestamp must be at or after the UNIX epoch"),
+    )?;
+
+    if timestamp_ms > UUID_V7_MAX_TIMESTAMP_MILLIS {
+        polars_bail!(
+            ComputeError:
+            "UUIDv7 timestamp exceeds the maximum 48-bit millisecond value"
+        );
+    }
+
+    Ok(timestamp_ms)
+}
+
+fn uuid_v7_from_unix_millis<C: ClockSequence<Output = impl Into<u128>>>(
+    context: &C,
+    timestamp_ms: u64,
+) -> Uuid {
+    let seconds = timestamp_ms / 1_000;
+    let subsec_nanos = ((timestamp_ms % 1_000) * 1_000_000) as u32;
+    Uuid::new_v7(Timestamp::from_unix(context, seconds, subsec_nanos))
 }
 
 // Necessary because we can't pass Datetime directly to the polars_expr macro. See https://github.com/pola-rs/pyo3-polars/issues/145

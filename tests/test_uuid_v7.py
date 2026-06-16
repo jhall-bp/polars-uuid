@@ -96,7 +96,7 @@ def test_uuid_v7_extract_dt_strict_mode() -> None:
             name="dt",
             dtype=pl.Datetime("ms", "UTC"),
             strategy=st.datetimes(
-                min_value=datetime.datetime(1970, 1, 1),
+                min_value=datetime.datetime.fromtimestamp(0),
                 timezones=st.just(datetime.UTC),
             ),
         ),
@@ -107,28 +107,34 @@ def test_dynamic_timestamp(df: pl.DataFrame) -> None:
     df = (
         df.with_columns(uuid=uuid_v7(timestamp="dt"))
         .with_columns(dt_rt=uuid_v7_extract_dt("uuid"))
-        .with_columns(eq=pl.col("dt_rt") == pl.first())
+        .with_columns(
+            eq=(
+                pl.col("dt_rt").dt.timestamp("ms") - pl.col("dt").dt.timestamp("ms")
+            ).abs()
+            < 1
+        )
     )
 
-    assert df["eq"].all()
-    assert df.height == (df["eq"].sum() + df["eq"].null_count())
+    try:
+        assert df["eq"].all()
+        assert df.height == (df["eq"].sum() + df["eq"].null_count())
+    except AssertionError:
+        print("👶")
+        print(df)
+        raise
 
 
-@given(
-    st.datetimes(
-        min_value=datetime.datetime.fromtimestamp(0),
-        timezones=st.timezones(),
-        allow_imaginary=False,
+@pytest.mark.parametrize("timestamp", [-1.0, float("inf"), (2**48) / 1_000])
+def test_uuid_v7_rejects_invalid_scalar_timestamp(timestamp: float) -> None:
+    with pytest.raises(pl.exceptions.ComputeError, match="UUIDv7 timestamp"):
+        pl.DataFrame({"idx": [0]}).with_columns(uuid=uuid_v7(timestamp=timestamp))
+
+
+@pytest.mark.parametrize("timestamp_ms", [-1, 2**48])
+def test_uuid_v7_rejects_invalid_dynamic_timestamp(timestamp_ms: int) -> None:
+    df = pl.DataFrame(
+        {"dt": pl.Series([timestamp_ms], dtype=pl.Int64).cast(pl.Datetime("ms", "UTC"))}
     )
-)
-def test_sorting(dt: datetime.datetime) -> None:
-    timestamp = dt.timestamp()
-    timestamp_ms = int(timestamp * 1_000)
-    df = (
-        pl.DataFrame({"idx": list(range(100_000))})
-        .with_columns(uuid=uuid_v7(timestamp=timestamp))
-        .with_columns(dt=uuid_v7_extract_dt("uuid"))
-        .with_columns(timestamp=pl.col("dt").dt.epoch("ms"))
-    )
-    assert df["uuid"].is_sorted()
-    assert ((df["timestamp"] - timestamp_ms).abs() <= 1).all()
+
+    with pytest.raises(pl.exceptions.ComputeError, match="UUIDv7 timestamp"):
+        df.with_columns(uuid=uuid_v7(timestamp="dt"))

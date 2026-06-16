@@ -39,7 +39,9 @@ fn u64_pair_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
         ca_lo_bits,
         |hi_bits, lo_bits, output| {
             let uuid = Uuid::from_u64_pair(hi_bits, lo_bits);
-            output.write_str(uuid.as_hyphenated().encode_lower(&mut buffer)).unwrap()
+            output
+                .write_str(uuid.as_hyphenated().encode_lower(&mut buffer))
+                .unwrap()
         },
     );
 
