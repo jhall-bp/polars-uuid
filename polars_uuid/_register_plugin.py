@@ -308,7 +308,7 @@ def uuid_v8_from_bytes(expr: str | pl.Expr, /) -> pl.Expr:
 
 def uuid_v8_by_hashing_str(expr: str | pl.Expr, /) -> pl.Expr:
     """
-    Generates deterministic version 8 UUIDs by hashing string values.
+    Generates deterministic version 8 UUIDs by hashing string values using BLAKE3.
 
     Parameters:
         expr (str | pl.Expr): The input column name or polars expression containing
