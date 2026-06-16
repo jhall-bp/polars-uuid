@@ -1,3 +1,4 @@
+import itertools
 import polars as pl
 import pytest
 
@@ -7,9 +8,9 @@ from polars_uuid import is_uuid, uuid_v4, uuid_v7, uuid_v7_now
 @pytest.mark.parametrize(
     "uuid_scalar_expr",
     [
-        uuid_v4(scalar=True).alias("uuid"),
-        uuid_v7_now(scalar=True).alias("uuid"),
-        uuid_v7(timestamp=0, scalar=True).alias("uuid"),
+        uuid_v4(scalar=True),
+        uuid_v7_now(scalar=True),
+        uuid_v7(timestamp=0, scalar=True),
     ],
 )
 def test_scalar_expressions_simple(uuid_scalar_expr: pl.Expr) -> None:
@@ -28,20 +29,36 @@ def test_scalar_expressions_simple(uuid_scalar_expr: pl.Expr) -> None:
 @pytest.mark.parametrize(
     "uuid_scalar_expr",
     [
-        uuid_v4(scalar=True).alias("uuid"),
-        uuid_v7_now(scalar=True).alias("uuid"),
-        uuid_v7(timestamp=0, scalar=True).alias("uuid"),
+        uuid_v4(scalar=True),
+        uuid_v7_now(scalar=True),
+        uuid_v7(timestamp=0, scalar=True),
     ],
 )
 def test_scalar_expressions_group_by(uuid_scalar_expr: pl.Expr) -> None:
     first_letter_of_animal = pl.col("animal").str.head(1).alias("group")
 
+    I = 1000
+
+    animals = pl.concat(
+        (
+            pl.repeat("Aardvark", I, eager=True),
+            pl.repeat("Antelope", I, eager=True),
+            pl.repeat("Bear", I, eager=True),
+            pl.repeat("Beaver", I, eager=True),
+            pl.repeat("Cat", I, eager=True),
+            pl.repeat("Dog", I, eager=True),
+            pl.repeat("Dinosaur", I, eager=True),
+            pl.repeat("Emu", I, eager=True),
+            pl.repeat("Egg", I, eager=True),
+        )
+    ).shuffle(seed=I)
+
     df = (
-        pl.DataFrame({"animal": ["Aardvark", "Antelope", "Bear", "Beaver", "Cat"]})
+        pl.DataFrame({"animal": animals})
         .group_by(first_letter_of_animal)
         .agg(
             pl.col("animal"),
-            uuid_scalar_expr,
+            uuid_scalar_expr.alias("uuid"),
         )
         .explode("animal")
     )

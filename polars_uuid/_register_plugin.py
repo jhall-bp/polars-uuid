@@ -123,15 +123,13 @@ def uuid_v4(*, scalar: bool = False) -> pl.Expr:
     """
     if scalar:
         args = _ARGS_SINGLE
-        fn_name = "uuid4_rand_single"
     else:
         args = _ARGS
-        fn_name = "uuid4_rand"
 
     return register_plugin_function(
         args=args,
         plugin_path=_LIB,
-        function_name=fn_name,
+        function_name="uuid4_rand",
         is_elementwise=not scalar,
         returns_scalar=scalar,
     )
@@ -156,15 +154,13 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
     """
     if scalar:
         args = _ARGS_SINGLE
-        fn_name = "uuid7_rand_now_single"
     else:
         args = _ARGS
-        fn_name = "uuid7_rand_now"
 
     return register_plugin_function(
         args=args,
         plugin_path=_LIB,
-        function_name=fn_name,
+        function_name="uuid7_rand_now",
         is_elementwise=not scalar,
         returns_scalar=scalar,
     )
@@ -232,12 +228,11 @@ def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> 
     """
     if isinstance(timestamp, (float, int)):
         kwargs: dict[str, object] = {"seconds_since_unix_epoch": timestamp}
+        fn_name = "uuid7_rand"
         if scalar:
             args = _ARGS_SINGLE
-            fn_name = "uuid7_rand_single"
         else:
             args = _ARGS
-            fn_name = "uuid7_rand"
     else:
         args = pl.col(timestamp) if isinstance(timestamp, str) else timestamp
         kwargs: dict[str, object] = {}

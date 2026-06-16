@@ -61,15 +61,6 @@ fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
 }
 
 #[polars_expr(output_type=String)]
-fn uuid7_rand_now_single(_inputs: &[Series]) -> PolarsResult<Series> {
-    let uuid = Uuid::now_v7();
-    Ok(Series::new(
-        PlSmallStr::from_static("uuid"),
-        [uuid.to_string()],
-    ))
-}
-
-#[polars_expr(output_type=String)]
 fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
     let timestamp_ms = kwargs.get_unix_timestamp_millis()?;
 
@@ -84,16 +75,6 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
         );
     }
     Ok(builder.finish().into_series())
-}
-
-#[polars_expr(output_type=String)]
-fn uuid7_rand_single(_inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
-    let timestamp_ms = kwargs.get_unix_timestamp_millis()?;
-    let uuid = uuid_v7_from_unix_millis(&uuid::NoContext, timestamp_ms);
-    Ok(Series::new(
-        PlSmallStr::from_static("uuid"),
-        [uuid.to_string()],
-    ))
 }
 
 // Extract timestamp
