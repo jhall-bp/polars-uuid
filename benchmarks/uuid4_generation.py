@@ -26,7 +26,7 @@ DUCKDB_CONNECTION = duckdb.connect(database=":memory:")
 
 def run_python_uuid() -> None:
     (
-        pl.select(idx=pl.arange(0, ROW_COUNT), eager=False)
+        pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(id=pl.first().map_elements(lambda _: str(uuid.uuid4()), return_dtype=pl.String))
         .collect()
         .to_arrow()
@@ -35,7 +35,7 @@ def run_python_uuid() -> None:
 
 def run_polars_uuid() -> None:
     (
-        pl.select(idx=pl.arange(0, ROW_COUNT), eager=False)
+        pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(uuid=uuid_v4())
         .collect()
         .to_arrow()
