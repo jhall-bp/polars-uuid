@@ -1,6 +1,7 @@
 mod uuid_utils;
 mod uuid_v4;
 mod uuid_v7;
+mod uuid_v8;
 use pyo3::prelude::*;
 use pyo3_polars::PolarsAllocator;
 

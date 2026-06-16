@@ -2178,6 +2178,7 @@ dependencies = [
 name = "polars-uuid"
 version = "0.7.1"
 dependencies = [
+ "blake3",
  "polars",
  "pyo3",
  "pyo3-polars",
