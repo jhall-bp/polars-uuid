@@ -51,9 +51,7 @@ def test_u128_to_uuid(lf: pl.LazyFrame) -> None:
 
     df = lf.with_columns(
         uuid=u128_to_uuid("values"),
-        uuid_py=pl.col("values").map_elements(
-            py_u128_to_uuid, return_dtype=pl.String
-        ),
+        uuid_py=pl.col("values").map_elements(py_u128_to_uuid, return_dtype=pl.String),
     ).collect()
 
     assert df["uuid"].null_count() == df["values"].null_count()

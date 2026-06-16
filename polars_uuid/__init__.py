@@ -6,4 +6,6 @@ from polars_uuid._register_plugin import uuid_v7 as uuid_v7
 from polars_uuid._register_plugin import uuid_v7_extract_dt as uuid_v7_extract_dt
 from polars_uuid._register_plugin import uuid_v7_now as uuid_v7_now
 from polars_uuid._register_plugin import uuid_v8_from_bytes as uuid_v8_from_bytes
-from polars_uuid._register_plugin import uuid_v8_by_hashing_str as uuid_v8_by_hashing_str
+from polars_uuid._register_plugin import (
+    uuid_v8_by_hashing_str as uuid_v8_by_hashing_str,
+)
