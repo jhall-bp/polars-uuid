@@ -17,7 +17,7 @@ from polars_uuid import (
 
 @given(st.floats(min_value=0, max_value=(2**48 - 1) / 1000))
 def test_uuid_v7(timestamp: float) -> None:
-    df = pl.DataFrame({"idx": list(range(100_000))}).with_columns(
+    df = pl.select(idx=pl.arange(100_000)).with_columns(
         uuid=uuid_v7(timestamp=timestamp)
     )
 
@@ -29,11 +29,12 @@ def test_uuid_v7(timestamp: float) -> None:
 
 
 def test_uuid_v7_now() -> None:
-    df = pl.DataFrame({"idx": list(range(1_000_000))}).with_columns(uuid=uuid_v7_now())
+    df = pl.select(idx=pl.arange(100_000)).with_columns(uuid=uuid_v7_now())
 
     assert df["uuid"].null_count() == 0
     assert df["uuid"].dtype == pl.String
     assert df["uuid"].is_unique().all()
+    assert df["uuid"].is_sorted()
     assert df.select(is_uuid("uuid")).to_series().all()
     assert df["uuid"].str.slice(0, 15).n_unique() > 1
 
@@ -48,7 +49,7 @@ def test_uuid_v7_extract_dt() -> None:
         return int(timestamp_hex, 16)
 
     df = (
-        pl.DataFrame({"idx": list(range(100_000))})
+        pl.select(idx=pl.arange(100_000))
         .with_columns(uuid=uuid_v7_now())
         .with_columns(
             dt=uuid_v7_extract_dt("uuid"),
@@ -75,13 +76,13 @@ def test_uuid_v7_extract_dt_strict_mode() -> None:
         match=r"Failed to extract timestamp from UUID string: .+",
     ):
         df = (
-            pl.DataFrame({"idx": list(range(100_000))})
+            pl.select(idx=pl.arange(100_000))
             .with_columns(bad_uuid=pl.col("idx").cast(pl.String))
             .with_columns(dt=uuid_v7_extract_dt("bad_uuid"))
         )
 
     df = (
-        pl.DataFrame({"idx": list(range(100_000))})
+        pl.select(idx=pl.arange(100_000))
         .with_columns(bad_uuid=pl.col("idx").cast(pl.String))
         .with_columns(dt=uuid_v7_extract_dt("bad_uuid", strict=False))
     )

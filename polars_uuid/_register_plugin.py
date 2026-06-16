@@ -147,6 +147,10 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs.
 
+    Notes:
+        - This expression uses uuid::Uuid::now_v7(). This means the generated
+            UUIDs will be ordered, but may not all have the same timestamp.
+
     Example:
         >>> df.with_columns(uuid=uuid_v7_now())
     """
@@ -177,6 +181,10 @@ def uuid_v7(*, timestamp: int | float, scalar: bool = False) -> pl.Expr:
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
 
+    Notes:
+        - UUIDs sort by timestamp at millisecond precision, but UUIDs generated with
+          equal millisecond timestamps are randomly ordered rather than input ordered.
+
     Example:
         >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
         >>> df.with_columns(uuid=uuid_v7(timestamp=dt.timestamp()))
@@ -194,6 +202,10 @@ def uuid_v7(*, timestamp: str | pl.Expr) -> pl.Expr:
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
 
+    Notes:
+        - UUIDs sort by timestamp at millisecond precision, but UUIDs generated with
+          equal millisecond timestamps are randomly ordered rather than input ordered.
+
     Example:
         >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)
         >>> df.with_columns(uuid=uuid_v7(timestamp=pl.col("created_at")))
@@ -209,6 +221,10 @@ def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> 
 
     Returns:
         pl.Expr: A polars expression of random v7 UUIDs based on the given timestamp.
+
+    Notes:
+        - UUIDs sort by timestamp at millisecond precision, but UUIDs generated with
+          equal millisecond timestamps are randomly ordered rather than input ordered.
 
     Example:
         >>> dt = datetime.datetime(2000, 1, 1, tz=datetime.UTC)

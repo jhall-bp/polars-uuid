@@ -55,7 +55,9 @@ fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
     for _ in 0..height {
         builder.append_value(Uuid::now_v7().hyphenated().encode_lower(&mut buffer));
     }
-    Ok(builder.finish().into_series())
+    let mut series = builder.finish().into_series();
+    series.set_sorted_flag(polars::series::IsSorted::Ascending);
+    Ok(series)
 }
 
 #[polars_expr(output_type=String)]
