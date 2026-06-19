@@ -51,7 +51,7 @@ def run_duckdb() -> None:
         f"""
         SELECT
             idx,
-            uuid() AS uuid
+            uuidv4() AS uuid
         FROM range({ROW_COUNT}) AS t(idx)
         """
     ).to_arrow_table()
