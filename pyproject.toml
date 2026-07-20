@@ -8,13 +8,6 @@ classifiers = [
 ]
 dynamic = ["version"]
 
-[tool.maturin]
-module-name = "polars_uuid._internal"
-
-[[tool.mypy.overrides]]
-module = "polars.utils.udfs"
-ignore_missing_imports = true
-
 [dependency-groups]
 dev = [
     "hypothesis>=6.151.0",
@@ -23,6 +16,13 @@ dev = [
     "pytest>=8.3.5",
     "ruff>=0.15.10",
 ]
+benchmarks = [
+    "duckdb",
+    "pyarrow",
+]
+
+[tool.maturin]
+module-name = "polars_uuid._internal"
 
 [build-system]
 requires = ["maturin>=1.0,<2.0", "polars>=1.38.1"]
