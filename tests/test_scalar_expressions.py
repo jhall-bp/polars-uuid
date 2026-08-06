@@ -60,7 +60,7 @@ def test_scalar_expressions_group_by(uuid_scalar_expr: pl.Expr) -> None:
             pl.col("animal"),
             uuid_scalar_expr.alias("uuid"),
         )
-        .explode("animal")
+        .explode("animal", empty_as_null=False)
     )
 
     assert df["uuid"].null_count() == 0
