@@ -13,8 +13,8 @@ codegen-units = 1
 
 [dependencies]
 blake3 = "1.8.5"
-polars = { version = "0.55.1", features = ["dtype-date", "dtype-u128", "timezones"], default-features = false }
-pyo3 = { version = "0.29.0", features = ["extension-module", "abi3-py313"] }
-pyo3-polars = { version = "0.28.0", features = ["derive"] }
+polars = { version = "0.55", features = ["dtype-date", "dtype-u128", "timezones"], default-features = false }
+pyo3 = { version = "0.29", features = ["extension-module", "abi3-py313"] }
+pyo3-polars = { version = "0.28", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
-uuid = { version = "1.16.0", features = ["fast-rng", "v4", "v7", "v8"] }
+uuid = { version = "1.16", features = ["fast-rng", "v4", "v7", "v8"] }
