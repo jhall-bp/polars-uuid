@@ -21,19 +21,19 @@ from polars_uuid import uuid_v4
 
 ITERATIONS = 1_000
 ROW_COUNT = 100_000
-DUCKDB_CONNECTION = duckdb.connect(database=":memory:")
+DUCKDB_CONNECTION = duckdb.connect()
 
 
 def run_python_uuid() -> None:
     (
         pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(
-            id=pl.first().map_elements(
-                lambda _: str(uuid.uuid4()), return_dtype=pl.String
+            id=pl.first().map_batches(
+                lambda s: pl.Series(None, [str(uuid.uuid4()) for _ in range(s.len())]),
+                return_dtype=pl.String,
             )
         )
         .collect()
-        .to_arrow()
     )
 
 
@@ -42,12 +42,11 @@ def run_polars_uuid() -> None:
         pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(uuid=uuid_v4())
         .collect()
-        .to_arrow()
     )
 
 
 def run_duckdb() -> None:
-    DUCKDB_CONNECTION.execute(
+    DUCKDB_CONNECTION.sql(
         f"""
         SELECT
             idx,
