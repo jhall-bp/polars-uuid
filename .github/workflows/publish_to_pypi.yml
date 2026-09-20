@@ -93,8 +93,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          version: "latest-known"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          prune-cache: true
 
       - name: Set up Rust
         run: rustup show
@@ -119,8 +120,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          version: "latest-known"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          prune-cache: true
 
       - name: Set up Rust
         run: rustup show
@@ -136,9 +138,9 @@ jobs:
     strategy:
       matrix:
         platform:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-26.04
             target: x86_64
-          - runner: ubuntu-22.04
+          - runner: ubuntu-26.04
             target: aarch64
     steps:
       - uses: actions/checkout@v7
@@ -148,8 +150,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          version: "latest-known"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          prune-cache: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -180,8 +183,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          version: "latest-known"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          prune-cache: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -200,7 +204,7 @@ jobs:
     strategy:
       matrix:
         platform:
-          - runner: macos-15-intel
+          - runner: macos-26-intel
             target: x86_64
           - runner: macos-26
             target: aarch64
@@ -212,8 +216,9 @@ jobs:
       - name: Setup uv
         uses: astral-sh/setup-uv@v10.0.1
         with:
+          version: "latest-known"
           enable-cache: true
-          cache-dependency-glob: "uv.lock"
+          prune-cache: true
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
