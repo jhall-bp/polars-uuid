@@ -91,7 +91,7 @@ jobs:
         with:
           python-version: ${{ needs['workflow-metadata'].outputs['python-min'] }}
       - name: Setup uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "latest-known"
           enable-cache: true
@@ -118,7 +118,7 @@ jobs:
         with:
           python-version: ${{ needs['workflow-metadata'].outputs['python-min'] }}
       - name: Setup uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "latest-known"
           enable-cache: true
@@ -148,7 +148,7 @@ jobs:
         with:
           python-version: ${{ needs['workflow-metadata'].outputs['python-min'] }}
       - name: Setup uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "latest-known"
           enable-cache: true
@@ -181,7 +181,7 @@ jobs:
           python-version: ${{ needs['workflow-metadata'].outputs['python-min'] }}
           architecture: ${{ matrix.platform.target }}
       - name: Setup uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "latest-known"
           enable-cache: true
@@ -214,7 +214,7 @@ jobs:
         with:
           python-version: ${{ needs['workflow-metadata'].outputs['python-min'] }}
       - name: Setup uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           version: "latest-known"
           enable-cache: true
@@ -278,6 +278,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
       - name: Install uv
-        uses: astral-sh/setup-uv@v10.0.1
+        uses: astral-sh/setup-uv@v10.2.0
       - name: Publish to PyPI
         run: uv publish wheels-*/*
