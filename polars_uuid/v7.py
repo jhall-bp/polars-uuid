@@ -6,7 +6,8 @@ import polars as pl
 from polars.plugins import (
     register_plugin_function,
 )
-from polars_uuid._constants import PLUGIN_PATH, ARGS, ARGS_SINGLE
+
+from polars_uuid._constants import ARGS, ARGS_SINGLE, PLUGIN_PATH
 
 
 def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
@@ -27,13 +28,14 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
         args=ARGS_SINGLE if scalar else ARGS,
         plugin_path=PLUGIN_PATH,
         function_name="uuid7_rand_now",
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
+        is_deterministic=False,
     )
 
 
 @overload
-def uuid_v7(*, timestamp: int | float, scalar: bool = False) -> pl.Expr:
+def uuid_v7(*, timestamp: float, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the given timestamp.
 
@@ -74,7 +76,7 @@ def uuid_v7(*, timestamp: str | pl.Expr) -> pl.Expr:
     """
 
 
-def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> pl.Expr:
+def uuid_v7(*, timestamp: float | str | pl.Expr, scalar: bool = False) -> pl.Expr:
     """
     Generates a series of random version 7 UUIDs based on the given timestamp.
 
@@ -105,8 +107,9 @@ def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> 
         args=args,
         plugin_path=PLUGIN_PATH,
         function_name=fn_name,
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
+        is_deterministic=False,
         kwargs=kwargs,
     )
 

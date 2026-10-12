@@ -4,7 +4,8 @@ import polars as pl
 from polars.plugins import (
     register_plugin_function,
 )
-from polars_uuid._constants import PLUGIN_PATH, ARGS, ARGS_SINGLE
+
+from polars_uuid._constants import ARGS, ARGS_SINGLE, PLUGIN_PATH
 
 
 def uuid_v4(*, scalar: bool = False) -> pl.Expr:
@@ -21,6 +22,7 @@ def uuid_v4(*, scalar: bool = False) -> pl.Expr:
         args=ARGS_SINGLE if scalar else ARGS,
         plugin_path=PLUGIN_PATH,
         function_name="uuid4_rand",
-        is_elementwise=True,
+        is_elementwise=not scalar,
         returns_scalar=scalar,
+        is_deterministic=False,
     )
