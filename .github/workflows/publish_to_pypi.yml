@@ -53,29 +53,20 @@ jobs:
                   f"Unsupported requires-python value: {requires_python!r}; expected '>=X.Y'"
               )
 
-          def polars_min(requirements, source):
-              matches = []
-              for requirement in requirements:
-                  match = re.fullmatch(r"polars>=\s*([^,\s]+)", requirement)
-                  if match is not None:
-                      matches.append(match.group(1))
-              if len(matches) != 1:
-                  raise SystemExit(
-                      f"Expected exactly one polars minimum in {source}, found {matches!r}"
-                  )
-              return matches[0]
-
-          build_polars = polars_min(data["build-system"]["requires"], "build-system.requires")
-          dev_polars = polars_min(data["dependency-groups"]["dev"], "dependency-groups.dev")
-          if build_polars != dev_polars:
+          polars_versions = [
+              match.group(1)
+              for requirement in data["project"]["dependencies"]
+              if (match := re.fullmatch(r"polars>=\s*([^,\s]+)", requirement))
+          ]
+          if len(polars_versions) != 1:
               raise SystemExit(
-                  "Polars minimum mismatch: "
-                  f"build-system.requires has {build_polars}, dependency-groups.dev has {dev_polars}"
+                  "Expected exactly one polars minimum in project.dependencies, "
+                  f"found {polars_versions!r}"
               )
 
           with Path(os.environ["GITHUB_OUTPUT"]).open("a") as output:
               output.write(f"python-min={python_match.group(1)}\n")
-              output.write(f"polars-min={build_polars}\n")
+              output.write(f"polars-min={polars_versions[0]}\n")
           PY
 
   linux-just-test:
