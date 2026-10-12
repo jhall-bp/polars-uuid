@@ -27,7 +27,7 @@ def uuid_v7_now(*, scalar: bool = False) -> pl.Expr:
         args=ARGS_SINGLE if scalar else ARGS,
         plugin_path=PLUGIN_PATH,
         function_name="uuid7_rand_now",
-        is_elementwise=not scalar,
+        is_elementwise=True,
         returns_scalar=scalar,
     )
 
@@ -105,7 +105,7 @@ def uuid_v7(*, timestamp: int | float | str | pl.Expr, scalar: bool = False) -> 
         args=args,
         plugin_path=PLUGIN_PATH,
         function_name=fn_name,
-        is_elementwise=not scalar,
+        is_elementwise=True,
         returns_scalar=scalar,
         kwargs=kwargs,
     )

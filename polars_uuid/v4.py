@@ -21,6 +21,6 @@ def uuid_v4(*, scalar: bool = False) -> pl.Expr:
         args=ARGS_SINGLE if scalar else ARGS,
         plugin_path=PLUGIN_PATH,
         function_name="uuid4_rand",
-        is_elementwise=not scalar,
+        is_elementwise=True,
         returns_scalar=scalar,
     )
