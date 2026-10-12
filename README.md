@@ -16,9 +16,8 @@ I use `polars` as part of an ETL process to clean up and load data into DynamoDB
 import polars as pl
 import polars_uuid as pl_uuid
 
-df = (
-    pl.DataFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]})
-    .with_columns(pl_uuid.uuid_v4().alias("id"))
+df = pl.DataFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]}).with_columns(
+    pl_uuid.uuid_v4().alias("id")
 )
 
 print(df)
@@ -39,9 +38,8 @@ print(df)
 ### Generate v7 UUIDs Based on the Current Time
 
 ```python
-df = (
-    pl.DataFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]})
-    .with_columns(pl_uuid.uuid_v7_now().alias("id"))
+df = pl.DataFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]}).with_columns(
+    pl_uuid.uuid_v7_now().alias("id")
 )
 
 print(df)
@@ -65,10 +63,8 @@ print(df)
 df = (
     pl.DataFrame({"animal": ["Aardvark", "Antelope", "Bear", "Beaver", "Cat"]})
     .group_by(pl.col("animal").str.head(1).alias("group"))
-    .agg(
-        pl.col("animal"),
-        pl_uuid.uuid_v4(scalar=True).alias("id"),  # set scalar to True to generate a single UUID per group
-    )
+    .agg(pl.col("animal"))
+    .with_columns(pl_uuid.uuid_v4().alias("id"))
     .explode("animal")
 )
 
@@ -91,12 +87,21 @@ print(df)
 
 `polars_uuid` works well with lazy frames, but it is important to keep in mind that the generated UUIDs will be different each time a lazy frame is collected.
 
+Random UUID expressions are evaluated independently, including separate columns
+and queries passed to `pl.collect_all`. To share generated IDs across query
+branches, collect the UUID-bearing frame once and branch from that result.
+
+Use `scalar=True` to generate one UUID per query, or one per group inside
+`group_by().agg()` or `.over()`. Scalar generation can require an in-memory
+fallback. When you need one UUID per output group, the example above generates
+IDs after aggregation, avoiding that additional fallback. Other operations,
+including list aggregation, may still require an in-memory fallback.
+
 For example:
 
 ```python
-lf = (
-    pl.LazyFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]})
-    .with_columns(pl_uuid.uuid_v7_now().alias("id"))
+lf = pl.LazyFrame({"animal": ["Aardvark", "Bear", "Cat", "Dog", "Emu"]}).with_columns(
+    pl_uuid.uuid_v7_now().alias("id")
 )
 
 df_a = lf.collect()
