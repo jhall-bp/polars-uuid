@@ -1,9 +1,9 @@
 # /// script
-# requires-python = ">=3.14"
+# requires-python = ">=3.15"
 # dependencies = [
-#   "polars-uuid",
-#   "polars",
-#   "duckdb",
+#   "polars-uuid==0.9.0",
+#   "polars==2.0.0",
+#   "duckdb==2.0.0",
 #   "pyarrow",
 # ]
 # ///
@@ -42,6 +42,7 @@ def run_polars_uuid() -> None:
         pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(uuid=uuid_v4())
         .collect()
+        .to_arrow()
     )
 
 
