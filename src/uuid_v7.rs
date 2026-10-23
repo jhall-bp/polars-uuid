@@ -51,15 +51,15 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
+    let now = uuid::Timestamp::now(NoContext);
     let mut buffer = Uuid::encode_buffer();
+
     let height = inputs[0].len();
     let mut builder = StringChunkedBuilder::new(DEFAULT_COL_NAME, height);
     for _ in 0..height {
-        builder.append_value(Uuid::now_v7().hyphenated().encode_lower(&mut buffer));
+        builder.append_value(Uuid::new_v7(now).hyphenated().encode_lower(&mut buffer));
     }
-    let mut series = builder.finish().into_series();
-    series.set_sorted_flag(polars::series::IsSorted::Ascending);
-    Ok(series)
+    Ok(builder.finish().into_series())
 }
 
 #[polars_expr(output_type=String)]
