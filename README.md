@@ -120,14 +120,46 @@ print(df_ab)
 # Empty because the generated IDs are different each time lf is collected!
 ```
 
-## Benchmark
+## Benchmarks
 
-### Generate an Arrow Table with 10 000 UUIDv4 Values
+<details>
+<summary>Environment and methodology</summary>
 
-| Method                  | Time (1 000 iterations) | Relative `polars_uuid` |
-| ----------------------- | ----------------------- | ---------------------- |
-| `polars_uuid`           | 2.34s                   | Baseline               |
-| `uuid` + `map_elements` | 138.49s                 | 59.2x slower           |
-| `duckdb`                | 1.95s                   | 1.2x faster            |
+Measured on 23 October 2026 on an Apple M4 Pro (12 CPU cores, 24 GiB RAM),
+running macOS 27.0.1 and CPython 3.15.0. Dependencies were Polars 2.0.0,
+DuckDB 2.0.0, and PyArrow 26.0.0, with a local release build of
+`polars-uuid` 0.9.0 from source commit `13f5549`.
 
-See [benchmarks](benchmarks/uuid4_generation.py) for more details.
+Each script ran once, sequentially, with one untimed warm-up per method and
+both engines configured for 12 threads. Times are total elapsed seconds for
+the stated iteration count, including query execution, UUID string formatting,
+and Arrow materialization. All methods produce Arrow tables with UUID strings.
+The generators retain their libraries' native randomness and, for UUIDv7,
+timestamp sampling and ordering behavior.
+
+</details>
+
+### Generate an Arrow Table with 100,000 UUIDv4 Values
+
+Each iteration generates an integer index and 100,000 UUID strings.
+
+| Method | Time (1,000 iterations) | Relative to `polars_uuid` |
+| --- | ---: | ---: |
+| `polars_uuid.uuid_v4()` | 1.158 s | Baseline |
+| Python `uuid.uuid4()` + `map_batches` | 132.434 s | 114.3× slower |
+| DuckDB `uuidv4()` | 2.332 s | 2.0× slower |
+
+See [UUIDv4 generation benchmark](benchmarks/uuid4_generation.py).
+
+### Generate an Arrow Table with 100,000 UUIDv7 Values
+
+Each iteration generates an integer index and 100,000 UUID strings using the
+current time.
+
+| Method | Time (1,000 iterations) | Relative to `polars_uuid` |
+| --- | ---: | ---: |
+| `polars_uuid.uuid_v7_now()` | 1.250 s | Baseline |
+| Python `uuid.uuid7()` + `map_batches` | 153.820 s | 123.1× slower |
+| DuckDB `uuidv7()` | 2.994 s | 2.4× slower |
+
+See [UUIDv7 generation benchmark](benchmarks/uuid7_generation.py).

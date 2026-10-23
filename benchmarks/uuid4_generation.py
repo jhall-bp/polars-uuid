@@ -18,22 +18,25 @@ import polars as pl
 
 from polars_uuid import uuid_v4
 
-
 ITERATIONS = 1_000
 ROW_COUNT = 100_000
-DUCKDB_CONNECTION = duckdb.connect()
+DUCKDB_CONNECTION = duckdb.connect(config={"threads": pl.thread_pool_size()})
+
+# All methods materialize an Arrow table with an integer index and UUID strings.
+# Each method uses its native UUID generator, so random-number sources can differ.
 
 
 def run_python_uuid() -> None:
     (
         pl.select(idx=pl.arange(0, ROW_COUNT, eager=False), eager=False)
         .with_columns(
-            id=pl.first().map_batches(
+            uuid=pl.first().map_batches(
                 lambda s: pl.Series(None, [str(uuid.uuid4()) for _ in range(s.len())]),
                 return_dtype=pl.String,
             )
         )
         .collect()
+        .to_arrow()
     )
 
 
@@ -51,13 +54,18 @@ def run_duckdb() -> None:
         f"""
         SELECT
             idx,
-            uuidv4() AS uuid
+            uuidv4()::VARCHAR AS uuid
         FROM range({ROW_COUNT}) AS t(idx)
         """
     ).to_arrow_table()
 
 
 if __name__ == "__main__":
+    # Warm up imports, the plugin, and both engines before measuring any method.
+    run_python_uuid()
+    run_polars_uuid()
+    run_duckdb()
+
     python_seconds = timeit.timeit(run_python_uuid, number=ITERATIONS)
     polars_seconds = timeit.timeit(run_polars_uuid, number=ITERATIONS)
     duckdb_seconds = timeit.timeit(run_duckdb, number=ITERATIONS)
