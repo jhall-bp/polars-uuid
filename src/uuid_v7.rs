@@ -4,6 +4,8 @@ use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use uuid::{ClockSequence, NoContext, Timestamp, Uuid};
 
+use crate::DEFAULT_COL_NAME;
+
 const UUID_V7_MAX_TIMESTAMP_MILLIS: u64 = (1_u64 << 48) - 1;
 
 // Kwarg Structs
@@ -44,14 +46,14 @@ fn uuid7_rand_dynamic(inputs: &[Series]) -> PolarsResult<Series> {
             Ok::<(), PolarsError>(())
         })?;
 
-    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
+    Ok(out.into_series().with_name(DEFAULT_COL_NAME))
 }
 
 #[polars_expr(output_type=String)]
 fn uuid7_rand_now(inputs: &[Series]) -> PolarsResult<Series> {
     let mut buffer = Uuid::encode_buffer();
     let height = inputs[0].len();
-    let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
+    let mut builder = StringChunkedBuilder::new(DEFAULT_COL_NAME, height);
     for _ in 0..height {
         builder.append_value(Uuid::now_v7().hyphenated().encode_lower(&mut buffer));
     }
@@ -66,7 +68,7 @@ fn uuid7_rand(inputs: &[Series], kwargs: Uuid7Kwargs) -> PolarsResult<Series> {
 
     let mut buffer = Uuid::encode_buffer();
     let height = inputs[0].len();
-    let mut builder = StringChunkedBuilder::new(PlSmallStr::from_static("uuid"), height);
+    let mut builder = StringChunkedBuilder::new(DEFAULT_COL_NAME, height);
     for _ in 0..height {
         builder.append_value(
             uuid_v7_from_unix_millis(&NoContext, timestamp_ms)

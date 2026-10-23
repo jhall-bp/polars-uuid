@@ -4,6 +4,8 @@ use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use uuid::Uuid;
 
+use crate::DEFAULT_COL_NAME;
+
 // Random
 
 #[polars_expr(output_type=String)]
@@ -23,7 +25,7 @@ fn uuid8_from_binary(inputs: &[Series]) -> PolarsResult<Series> {
                 .unwrap();
         });
 
-    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
+    Ok(out.into_series().with_name(DEFAULT_COL_NAME))
 }
 
 #[polars_expr(output_type=String)]
@@ -42,5 +44,5 @@ fn uuid8_by_hashing_string(inputs: &[Series]) -> PolarsResult<Series> {
                 .unwrap();
         });
 
-    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
+    Ok(out.into_series().with_name(DEFAULT_COL_NAME))
 }

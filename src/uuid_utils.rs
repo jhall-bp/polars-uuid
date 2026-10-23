@@ -4,6 +4,8 @@ use polars::prelude::{arity::binary_elementwise_into_string_amortized, *};
 use pyo3_polars::derive::polars_expr;
 use uuid::Uuid;
 
+use crate::DEFAULT_COL_NAME;
+
 #[polars_expr(output_type=Boolean)]
 fn is_uuid(inputs: &[Series]) -> PolarsResult<Series> {
     let ca: &StringChunked = inputs[0].str()?;
@@ -25,7 +27,7 @@ fn u128_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
         out.write_str(uuid_str).unwrap();
     });
 
-    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
+    Ok(out.into_series().with_name(DEFAULT_COL_NAME))
 }
 
 #[polars_expr(output_type=String)]
@@ -45,5 +47,5 @@ fn u64_pair_to_uuid_string(inputs: &[Series]) -> PolarsResult<Series> {
         },
     );
 
-    Ok(out.into_series().with_name(PlSmallStr::from_static("uuid")))
+    Ok(out.into_series().with_name(DEFAULT_COL_NAME))
 }
